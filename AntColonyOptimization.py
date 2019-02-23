@@ -18,7 +18,7 @@ class Apple:
         surface.blit(image,(self.x, self.y)) 
  
  
-class Player:
+class Ant:
     x = [0]
     y = [0]
     step = 10
@@ -28,18 +28,18 @@ class Player:
     updateCountMax = 2
     updateCount = 0
  
-    def __init__(self, length):
-       self.length = length
+    def __init__(self):
        self.previousX = 0
        self.stepX = randint(-10,10);
        self.stepY = randint(-10,10);
+       
        for i in range(0,2000):
            self.x.append(-100)
            self.y.append(-100)
  
        # initial positions, no collision.
-       self.x[1] = 1*44
-       self.x[2] = 2*44
+       self.x[1] = 400#randint(0,800)
+       self.y[2] = 300#randint(0,600)
  
     def update(self):
          
@@ -73,9 +73,6 @@ class Player:
         
     def moveRandom(self):
         self.direction = 4
-        #print("moveRandom called")
-        #self.y[0] = self.y[0] + randint(-100,10)
-        #self.x[0] = self.x[0] + randint(0,100)
         
     def moveRight(self):
         self.direction = 0
@@ -104,8 +101,10 @@ class App:
  
     windowWidth = 800
     windowHeight = 600
-    player = 0
+    nAnts = 5
+    AntsLst = []
     apple = 0
+    
  
     def __init__(self):
         self._running = True
@@ -113,7 +112,9 @@ class App:
         self._image_surf = None
         self._apple_surf = None
         self.game = Game()
-        self.player = Player(1) 
+        for i in range (self.nAnts):
+            #self.AntsLst[0] = Ant()
+            self.AntsLst.append(Ant())
         self.apple = Apple(5,5)
  
     def on_init(self):
@@ -130,41 +131,44 @@ class App:
             self._running = False
  
     def on_loop(self):
-        self.player.update()
+        for i in range (self.nAnts):            
+            self.AntsLst[i].update()
  
         # does snake eat apple?
-        for i in range(0,self.player.length):
-            if self.game.isCollision(self.apple.x,self.apple.y,self.player.x[i], self.player.y[i],31):
+        for ant in range (self.nAnts):
+            if self.game.isCollision(self.apple.x,self.apple.y,self.AntsLst[ant].x[0], self.AntsLst[ant].y[0],31):
                 self.apple.x = randint(2,9) * 44
                 self.apple.y = randint(2,9) * 44
-                #self.player.length = self.player.length + 1
+                #self.AntsLst[0].length = self.AntsLst[0].length + 1
  
  
         # does snake collide with itself?
         '''
-        for i in range(2,self.player.length):
-            if self.game.isCollision(self.player.x[0],self.player.y[0],self.player.x[i], self.player.y[i],40):
+        for i in range(2,self.AntsLst[0].length):
+            if self.game.isCollision(self.AntsLst[0].x[0],self.AntsLst[0].y[0],self.AntsLst[0].x[i], self.AntsLst[0].y[i],40):
                 print("You lose! Collision: ")
-                print("x[0] (" + str(self.player.x[0]) + "," + str(self.player.y[0]) + ")")
-                print("x[" + str(i) + "] (" + str(self.player.x[i]) + "," + str(self.player.y[i]) + ")")
+                print("x[0] (" + str(self.AntsLst[0].x[0]) + "," + str(self.AntsLst[0].y[0]) + ")")
+                print("x[" + str(i) + "] (" + str(self.AntsLst[0].x[i]) + "," + str(self.AntsLst[0].y[i]) + ")")
                 exit(0)
         '''
 
         # does any reaches the border?
-        if(self.player.y[0]>self.windowHeight):
-            self.player.y[0] = 0
-        elif(self.player.y[0]<0):
-            self.player.y[0] = self.windowHeight
-        elif(self.player.x[0]>self.windowWidth):
-            self.player.x[0] = 0
-        elif(self.player.x[0]<0):
-            self.player.x[0] = self.windowWidth
- 
+        for ant in range (self.nAnts):
+            if(self.AntsLst[ant].y[0]>self.windowHeight):
+                self.AntsLst[ant].y[0] = 0
+            elif(self.AntsLst[ant].y[0]<0):
+                self.AntsLst[ant].y[0] = self.windowHeight
+            elif(self.AntsLst[ant].x[0]>self.windowWidth):
+                self.AntsLst[ant].x[0] = 0
+            elif(self.AntsLst[ant].x[0]<0):
+                self.AntsLst[ant].x[0] = self.windowWidth
+        #print(len(self.AntsLst))
         pass
  
     def on_render(self):
         self._display_surf.fill((0,0,0))
-        self.player.draw(self._display_surf, self._image_surf)
+        for ant in range (self.nAnts):
+            self.AntsLst[ant].draw(self._display_surf, self._image_surf)
         self.apple.draw(self._display_surf, self._apple_surf)
         pygame.display.flip()
  
@@ -180,20 +184,21 @@ class App:
             keys = pygame.key.get_pressed()
             if(iteration%100==0):
                 print("iter", iteration)
-                self.player.changeDirection()
-                self.player.moveRandom()
+                for ant in range (self.nAnts):
+                    self.AntsLst[ant].changeDirection()
+                    self.AntsLst[ant].moveRandom()
             
             if (keys[K_RIGHT]):
-                self.player.moveRight()
+                self.AntsLst[0].moveRight()
  
             if (keys[K_LEFT]):
-                self.player.moveLeft()
+                self.AntsLst[0].moveLeft()
  
             if (keys[K_UP]):
-                self.player.moveUp()
+                self.AntsLst[0].moveUp()
  
             if (keys[K_DOWN]):
-                self.player.moveDown()
+                self.AntsLst[0].moveDown()
  
             if (keys[K_ESCAPE]):
                 self._running = False
