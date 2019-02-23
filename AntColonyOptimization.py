@@ -53,6 +53,11 @@ class Ant:
             if self.direction == 4:
                 self.y = self.y + self.stepY
                 self.x = self.x + self.stepX
+            if (self.hasFood==1):
+                try:
+                    App.pheromoneMap[self.y][self.x] = 100
+                except:
+                    1;
                                             
             self.updateCount = 0
 
@@ -75,14 +80,21 @@ class Game:
         return False
  
 class App:
- 
+
     windowWidth = 800
     windowHeight = 600
     nAnts = 500
     AntsLst = []
     apple = 0
-    
- 
+
+    pheromoneMap = []
+    #initializing pharamone map
+    for i in range (windowHeight):
+        pheromoneMap.append([])
+    for i in range (windowHeight):    
+        for j in range (windowWidth):
+            pheromoneMap[i].append(0)
+
     def __init__(self):
         self._running = True
         self._display_surf = None
@@ -92,7 +104,6 @@ class App:
         self._home_surf = None
         self.game = Game()
         for i in range (self.nAnts):
-            #self.AntsLst[0] = Ant()
             self.AntsLst.append(Ant())
         self.apple = Apple(275,275)
         self.home = Home(50,50)
@@ -124,7 +135,8 @@ class App:
         # does ant reaches home?
         for ant in range (self.nAnts):
             if self.game.isCollision(self.home.x,self.home.y,self.AntsLst[ant].x, self.AntsLst[ant].y,31):
-                self.AntsLst[ant].hasFood = 1;      
+                if (self.AntsLst[ant].hasFood==1):
+                    self.AntsLst[ant].hasFood = 0;      
  
         # does any reaches the border?
         for ant in range (self.nAnts):
@@ -159,16 +171,46 @@ class App:
         while( self._running ):
             pygame.event.pump()
             keys = pygame.key.get_pressed()
-            if(iteration%100==0):
-                #print("iter", iteration)
-                for ant in range (self.nAnts):
-                    self.AntsLst[ant].changeDirection()
-                    self.AntsLst[ant].moveRandom()
+
+            #check for nearby pheromone
+            
+            for ant in range (self.nAnts):
+                if(self.AntsLst[ant].hasFood == 0):
+                    pheromoneNear = False
+                    highConcX = 0
+                    highConcY = 0
+                    highConc = 0
+                    for i in range (-2, 2):
+                        for j in range (-2, 2):
+                            #print
+                            searchY = self.AntsLst[ant].y + i
+                            searchX = self.AntsLst[ant].x + i
+                            if ((searchY<self.windowHeight and searchY>=0) and (searchX<self.windowWidth and searchX>=0)):
+                                if (self.pheromoneMap[searchY][searchX]>highConc):
+                                    highConc = self.pheromoneMap[searchY][searchX]
+                                    highConcX = searchX
+                                    highConcY = searchY
+                                    #print("pheromoneNear", highConc);
+                            if(highConc>0):
+                                self.AntsLst[ant].x = highConcX;
+                                self.AntsLst[ant].y = highConcY;
+                            else:
+                                if(iteration%100==0):
+                                #print("iter", iteration)
+                                    self.AntsLst[ant].changeDirection()
+                                    self.AntsLst[ant].moveRandom()
+            
+                                    
+            #evaporate pheromone
+            for i in range (self.windowHeight):    
+                for j in range (self.windowWidth):
+                    if (self.pheromoneMap[i][j]>=1):
+                        self.pheromoneMap[i][j] = self.pheromoneMap[i][j] - 1
             
             self.on_loop()
             self.on_render()
             iteration = iteration +1
-            time.sleep (50.0 / 5000.0);
+            time.sleep (50.0 / 40000.0);
         self.on_cleanup()
  
 if __name__ == "__main__" :
