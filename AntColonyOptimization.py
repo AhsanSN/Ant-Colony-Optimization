@@ -42,28 +42,23 @@ class Ant:
  
     def __init__(self):
        self.previousX = 0
-       self.stepX = randint(-4,4);
-       self.stepY = randint(-4,4);
+       self.stepX = randint(-2,2);
+       self.stepY = randint(-2,2);
  
     def update(self):
-         
-        self.updateCount = self.updateCount + 1
-        if self.updateCount > self.updateCountMax:
-            # update position of head of ant
-            if self.direction == 4:
-                self.y = self.y + self.stepY
-                self.x = self.x + self.stepX
-            if (self.hasFood==1):
-                try:
-                    App.pheromoneMap[self.y][self.x] = 100
-                except:
-                    1;
+        # update position of head of ant
+        if self.direction == 4:
+            self.y = self.y + int(self.stepY/randint(1,5))
+            self.x = self.x + int(self.stepX/randint(1,5))
+        if (self.hasFood==1):
+            try:
+                App.pheromoneMap[self.y][self.x] = App.pheromoneMap[self.y][self.x] + current_milli_time()
+            except:
+                1;
                                             
-            self.updateCount = 0
-
     def changeDirection(self):
-        self.stepY = randint(-3,3)
-        self.stepX = randint(-3,3)
+        self.stepY = randint(-2,2)
+        self.stepX = randint(-2,2)
 
     def moveRandom(self):
         self.direction = 4
@@ -88,6 +83,9 @@ class App:
     apple = 0
 
     pheromoneMap = []
+    
+    current_milli_time = lambda: int(round(time.time() * 1000))
+    timeNow = current_milli_time()
     #initializing pharamone map
     for i in range (windowHeight):
         pheromoneMap.append([])
@@ -202,15 +200,16 @@ class App:
             
                                     
             #evaporate pheromone
+            '''
             for i in range (self.windowHeight):    
                 for j in range (self.windowWidth):
                     if (self.pheromoneMap[i][j]>=1):
                         self.pheromoneMap[i][j] = self.pheromoneMap[i][j] - 1
-            
+            '''
             self.on_loop()
             self.on_render()
             iteration = iteration +1
-            time.sleep (50.0 / 40000.0);
+            time.sleep (50.0 / 100000.0);
         self.on_cleanup()
  
 if __name__ == "__main__" :
