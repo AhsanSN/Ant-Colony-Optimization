@@ -5,14 +5,25 @@ from random import randint
 import pygame
 import time
 
-class Apple:
+
+class Home:
     x = 0
     y = 0
-    step = 31
+    step = 11
  
     def __init__(self,x,y):
-        self.x = x * self.step
-        self.y = y * self.step
+        self.x = x 
+        self.y = y
+ 
+    def draw(self, surface, image):
+        surface.blit(image,(self.x, self.y))
+        
+class Apple:
+    x = 0
+    y = 0 
+    def __init__(self,x,y):
+        self.x = x
+        self.y = y
  
     def draw(self, surface, image):
         surface.blit(image,(self.x, self.y)) 
@@ -24,6 +35,7 @@ class Ant:
     step = 3
     direction = 0
     length = 1
+    hasFood = 0
  
     updateCountMax = 2
     updateCount = 0
@@ -74,13 +86,16 @@ class App:
     def __init__(self):
         self._running = True
         self._display_surf = None
-        self._image_surf = None
+        self._ant_surf = None
+        self._antFood_surf = None
         self._apple_surf = None
+        self._home_surf = None
         self.game = Game()
         for i in range (self.nAnts):
             #self.AntsLst[0] = Ant()
             self.AntsLst.append(Ant())
-        self.apple = Apple(5,5)
+        self.apple = Apple(275,275)
+        self.home = Home(50,50)
  
     def on_init(self):
         pygame.init()
@@ -88,8 +103,10 @@ class App:
  
         pygame.display.set_caption('Ant Colony Optimization (Github: @AhsanSn)')
         self._running = True
-        self._image_surf = pygame.image.load("pygame.png").convert()
+        self._ant_surf = pygame.image.load("ant.png").convert()
+        self._antFood_surf = pygame.image.load("antFood.png").convert()
         self._apple_surf = pygame.image.load("block.jpg").convert()
+        self._home_surf = pygame.image.load("home.jpg").convert()
  
     def on_event(self, event):
         if event.type == QUIT:
@@ -99,12 +116,15 @@ class App:
         for i in range (self.nAnts):            
             self.AntsLst[i].update()
  
-        # does snake eat apple?
+        # does ant eat apple?
         for ant in range (self.nAnts):
             if self.game.isCollision(self.apple.x,self.apple.y,self.AntsLst[ant].x, self.AntsLst[ant].y,31):
-                self.apple.x = randint(2,9) * 44
-                self.apple.y = randint(2,9) * 44
-                #self.AntsLst[0].length = self.AntsLst[0].length + 1
+                self.AntsLst[ant].hasFood = 1;
+
+        # does ant reaches home?
+        for ant in range (self.nAnts):
+            if self.game.isCollision(self.home.x,self.home.y,self.AntsLst[ant].x, self.AntsLst[ant].y,31):
+                self.AntsLst[ant].hasFood = 1;      
  
         # does any reaches the border?
         for ant in range (self.nAnts):
@@ -121,8 +141,12 @@ class App:
     def on_render(self):
         self._display_surf.fill((0,0,0))
         for ant in range (self.nAnts):
-            self.AntsLst[ant].draw(self._display_surf, self._image_surf)
+            if(self.AntsLst[ant].hasFood==1):
+                self.AntsLst[ant].draw(self._display_surf, self._antFood_surf)
+            if(self.AntsLst[ant].hasFood==0):
+                self.AntsLst[ant].draw(self._display_surf, self._ant_surf)
         self.apple.draw(self._display_surf, self._apple_surf)
+        self.home.draw(self._display_surf, self._home_surf)
         pygame.display.flip()
  
     def on_cleanup(self):
