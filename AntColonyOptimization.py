@@ -23,13 +23,16 @@ class Player:
     y = [0]
     step = 10
     direction = 0
-    length = 3
+    length = 1
  
     updateCountMax = 2
     updateCount = 0
  
     def __init__(self, length):
        self.length = length
+       self.previousX = 0
+       self.stepX = randint(-10,10);
+       self.stepY = randint(-10,10);
        for i in range(0,2000):
            self.x.append(-100)
            self.y.append(-100)
@@ -39,7 +42,7 @@ class Player:
        self.x[2] = 2*44
  
     def update(self):
- 
+         
         self.updateCount = self.updateCount + 1
         if self.updateCount > self.updateCountMax:
  
@@ -57,10 +60,23 @@ class Player:
                 self.y[0] = self.y[0] - self.step
             if self.direction == 3:
                 self.y[0] = self.y[0] + self.step
- 
+                
+            if self.direction == 4:
+                self.y[0] = self.y[0] + self.stepY
+                self.x[0] = self.x[0] + self.stepX
+                                            
             self.updateCount = 0
- 
- 
+
+    def changeDirection(self):
+        self.stepY = randint(-10,10)
+        self.stepX = randint(-10,10)
+        
+    def moveRandom(self):
+        self.direction = 4
+        #print("moveRandom called")
+        #self.y[0] = self.y[0] + randint(-100,10)
+        #self.x[0] = self.x[0] + randint(0,100)
+        
     def moveRight(self):
         self.direction = 0
  
@@ -97,7 +113,7 @@ class App:
         self._image_surf = None
         self._apple_surf = None
         self.game = Game()
-        self.player = Player(3) 
+        self.player = Player(1) 
         self.apple = Apple(5,5)
  
     def on_init(self):
@@ -121,7 +137,7 @@ class App:
             if self.game.isCollision(self.apple.x,self.apple.y,self.player.x[i], self.player.y[i],31):
                 self.apple.x = randint(2,9) * 44
                 self.apple.y = randint(2,9) * 44
-                self.player.length = self.player.length + 1
+                #self.player.length = self.player.length + 1
  
  
         # does snake collide with itself?
@@ -133,6 +149,16 @@ class App:
                 print("x[" + str(i) + "] (" + str(self.player.x[i]) + "," + str(self.player.y[i]) + ")")
                 exit(0)
         '''
+
+        # does any reaches the border?
+        if(self.player.y[0]>self.windowHeight):
+            self.player.y[0] = 0
+        elif(self.player.y[0]<0):
+            self.player.y[0] = self.windowHeight
+        elif(self.player.x[0]>self.windowWidth):
+            self.player.x[0] = 0
+        elif(self.player.x[0]<0):
+            self.player.x[0] = self.windowWidth
  
         pass
  
@@ -148,11 +174,15 @@ class App:
     def on_execute(self):
         if self.on_init() == False:
             self._running = False
- 
+        iteration = 0
         while( self._running ):
             pygame.event.pump()
-            keys = pygame.key.get_pressed() 
- 
+            keys = pygame.key.get_pressed()
+            if(iteration%100==0):
+                print("iter", iteration)
+                self.player.changeDirection()
+                self.player.moveRandom()
+            
             if (keys[K_RIGHT]):
                 self.player.moveRight()
  
@@ -170,8 +200,8 @@ class App:
  
             self.on_loop()
             self.on_render()
- 
-            time.sleep (50.0 / 3000.0);
+            iteration = iteration +1
+            time.sleep (50.0 / 5000.0);
         self.on_cleanup()
  
 if __name__ == "__main__" :
