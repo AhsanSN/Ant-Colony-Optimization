@@ -19,9 +19,9 @@ class Apple:
  
  
 class Ant:
-    x = [0]
-    y = [0]
-    step = 10
+    x = randint(0,800)
+    y = randint(0,800)
+    step = 3
     direction = 0
     length = 1
  
@@ -30,65 +30,30 @@ class Ant:
  
     def __init__(self):
        self.previousX = 0
-       self.stepX = randint(-10,10);
-       self.stepY = randint(-10,10);
-       
-       for i in range(0,2000):
-           self.x.append(-100)
-           self.y.append(-100)
- 
-       # initial positions, no collision.
-       self.x[1] = 400#randint(0,800)
-       self.y[2] = 300#randint(0,600)
+       self.stepX = randint(-4,4);
+       self.stepY = randint(-4,4);
  
     def update(self):
          
         self.updateCount = self.updateCount + 1
         if self.updateCount > self.updateCountMax:
- 
-            # update previous positions
-            for i in range(self.length-1,0,-1):
-                self.x[i] = self.x[i-1]
-                self.y[i] = self.y[i-1]
- 
-            # update position of head of snake
-            if self.direction == 0:
-                self.x[0] = self.x[0] + self.step
-            if self.direction == 1:
-                self.x[0] = self.x[0] - self.step
-            if self.direction == 2:
-                self.y[0] = self.y[0] - self.step
-            if self.direction == 3:
-                self.y[0] = self.y[0] + self.step
-                
+            # update position of head of ant
             if self.direction == 4:
-                self.y[0] = self.y[0] + self.stepY
-                self.x[0] = self.x[0] + self.stepX
+                self.y = self.y + self.stepY
+                self.x = self.x + self.stepX
                                             
             self.updateCount = 0
 
     def changeDirection(self):
-        self.stepY = randint(-10,10)
-        self.stepX = randint(-10,10)
-        
+        self.stepY = randint(-3,3)
+        self.stepX = randint(-3,3)
+
     def moveRandom(self):
         self.direction = 4
-        
-    def moveRight(self):
-        self.direction = 0
- 
-    def moveLeft(self):
-        self.direction = 1
- 
-    def moveUp(self):
-        self.direction = 2
- 
-    def moveDown(self):
-        self.direction = 3 
  
     def draw(self, surface, image):
         for i in range(0,self.length):
-            surface.blit(image,(self.x[i],self.y[i])) 
+            surface.blit(image,(self.x,self.y)) 
  
 class Game:
     def isCollision(self,x1,y1,x2,y2,bsize):
@@ -101,7 +66,7 @@ class App:
  
     windowWidth = 800
     windowHeight = 600
-    nAnts = 5
+    nAnts = 500
     AntsLst = []
     apple = 0
     
@@ -121,7 +86,7 @@ class App:
         pygame.init()
         self._display_surf = pygame.display.set_mode((self.windowWidth,self.windowHeight), pygame.HWSURFACE)
  
-        pygame.display.set_caption('Pygame pythonspot.com example')
+        pygame.display.set_caption('Ant Colony Optimization (Github: @AhsanSn)')
         self._running = True
         self._image_surf = pygame.image.load("pygame.png").convert()
         self._apple_surf = pygame.image.load("block.jpg").convert()
@@ -136,33 +101,21 @@ class App:
  
         # does snake eat apple?
         for ant in range (self.nAnts):
-            if self.game.isCollision(self.apple.x,self.apple.y,self.AntsLst[ant].x[0], self.AntsLst[ant].y[0],31):
+            if self.game.isCollision(self.apple.x,self.apple.y,self.AntsLst[ant].x, self.AntsLst[ant].y,31):
                 self.apple.x = randint(2,9) * 44
                 self.apple.y = randint(2,9) * 44
                 #self.AntsLst[0].length = self.AntsLst[0].length + 1
  
- 
-        # does snake collide with itself?
-        '''
-        for i in range(2,self.AntsLst[0].length):
-            if self.game.isCollision(self.AntsLst[0].x[0],self.AntsLst[0].y[0],self.AntsLst[0].x[i], self.AntsLst[0].y[i],40):
-                print("You lose! Collision: ")
-                print("x[0] (" + str(self.AntsLst[0].x[0]) + "," + str(self.AntsLst[0].y[0]) + ")")
-                print("x[" + str(i) + "] (" + str(self.AntsLst[0].x[i]) + "," + str(self.AntsLst[0].y[i]) + ")")
-                exit(0)
-        '''
-
         # does any reaches the border?
         for ant in range (self.nAnts):
-            if(self.AntsLst[ant].y[0]>self.windowHeight):
-                self.AntsLst[ant].y[0] = 0
-            elif(self.AntsLst[ant].y[0]<0):
-                self.AntsLst[ant].y[0] = self.windowHeight
-            elif(self.AntsLst[ant].x[0]>self.windowWidth):
-                self.AntsLst[ant].x[0] = 0
-            elif(self.AntsLst[ant].x[0]<0):
-                self.AntsLst[ant].x[0] = self.windowWidth
-        #print(len(self.AntsLst))
+            if(self.AntsLst[ant].y>self.windowHeight):
+                self.AntsLst[ant].y = 0
+            elif(self.AntsLst[ant].y<0):
+                self.AntsLst[ant].y = self.windowHeight
+            elif(self.AntsLst[ant].x>self.windowWidth):
+                self.AntsLst[ant].x = 0
+            elif(self.AntsLst[ant].x<0):
+                self.AntsLst[ant].x = self.windowWidth
         pass
  
     def on_render(self):
@@ -183,26 +136,11 @@ class App:
             pygame.event.pump()
             keys = pygame.key.get_pressed()
             if(iteration%100==0):
-                print("iter", iteration)
+                #print("iter", iteration)
                 for ant in range (self.nAnts):
                     self.AntsLst[ant].changeDirection()
                     self.AntsLst[ant].moveRandom()
             
-            if (keys[K_RIGHT]):
-                self.AntsLst[0].moveRight()
- 
-            if (keys[K_LEFT]):
-                self.AntsLst[0].moveLeft()
- 
-            if (keys[K_UP]):
-                self.AntsLst[0].moveUp()
- 
-            if (keys[K_DOWN]):
-                self.AntsLst[0].moveDown()
- 
-            if (keys[K_ESCAPE]):
-                self._running = False
- 
             self.on_loop()
             self.on_render()
             iteration = iteration +1
@@ -212,3 +150,7 @@ class App:
 if __name__ == "__main__" :
     theApp = App()
     theApp.on_execute()
+
+'''
+Initial code taken from: https://pythonspot.com/snake-with-pygame/
+'''
