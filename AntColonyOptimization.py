@@ -8,7 +8,7 @@ import time
 class Apple:
     x = 0
     y = 0
-    step = 44
+    step = 31
  
     def __init__(self,x,y):
         self.x = x * self.step
@@ -21,7 +21,7 @@ class Apple:
 class Player:
     x = [0]
     y = [0]
-    step = 44
+    step = 10
     direction = 0
     length = 3
  
@@ -79,8 +79,8 @@ class Player:
  
 class Game:
     def isCollision(self,x1,y1,x2,y2,bsize):
-        if x1 >= x2 and x1 <= x2 + bsize:
-            if y1 >= y2 and y1 <= y2 + bsize:
+        if x1 <= x2 and x1 >= x2 - bsize:
+            if y1 <= y2 and y1 >= y2 - bsize:
                 return True
         return False
  
@@ -118,19 +118,21 @@ class App:
  
         # does snake eat apple?
         for i in range(0,self.player.length):
-            if self.game.isCollision(self.apple.x,self.apple.y,self.player.x[i], self.player.y[i],44):
+            if self.game.isCollision(self.apple.x,self.apple.y,self.player.x[i], self.player.y[i],31):
                 self.apple.x = randint(2,9) * 44
                 self.apple.y = randint(2,9) * 44
                 self.player.length = self.player.length + 1
  
  
         # does snake collide with itself?
+        '''
         for i in range(2,self.player.length):
             if self.game.isCollision(self.player.x[0],self.player.y[0],self.player.x[i], self.player.y[i],40):
                 print("You lose! Collision: ")
                 print("x[0] (" + str(self.player.x[0]) + "," + str(self.player.y[0]) + ")")
                 print("x[" + str(i) + "] (" + str(self.player.x[i]) + "," + str(self.player.y[i]) + ")")
                 exit(0)
+        '''
  
         pass
  
@@ -169,7 +171,7 @@ class App:
             self.on_loop()
             self.on_render()
  
-            time.sleep (50.0 / 1000.0);
+            time.sleep (50.0 / 3000.0);
         self.on_cleanup()
  
 if __name__ == "__main__" :
