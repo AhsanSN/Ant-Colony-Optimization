@@ -28,13 +28,22 @@ class Apple:
     def draw(self, surface, image):
         surface.blit(image,(self.x, self.y)) 
  
+class Node:
+    x = 0
+    y = 0
+    def __init__(self, x, y):
+       self.x = x
+       self.y = y
+
+    def draw(self, surface, image):
+        surface.blit(image,(self.x,self.y)) 
+
  
 class Ant:
     x = 0
     y = 0 
     step = 3
     direction = 0
-    length = 1
     hasFood = 0
  
     updateCountMax = 2
@@ -48,10 +57,14 @@ class Ant:
        self.y = y
  
     def update(self):
+        print("x, y", self.stepX, self.stepY)
         # update position of head of ant
-        if self.direction == 4:
-            self.y = self.y + int(self.stepY/randint(1,5))
-            self.x = self.x + int(self.stepX/randint(1,5))
+        #self.stepX = ((790-50)/1000)
+        #self.stepY = ((590-50)/1000)
+        #print(self.stepX)
+        #if self.direction == 4:
+        self.y = self.y + self.stepY#0.1#int(self.stepY/randint(1,5))
+        self.x = self.x + self.stepX#0.1#int(self.stepX/randint(1,5))
         if (self.hasFood==1):
             try:
                 App.pheromoneMap[self.y][self.x] = App.pheromoneMap[self.y][self.x] + current_milli_time()
@@ -59,15 +72,28 @@ class Ant:
                 1;
                                             
     def changeDirection(self):
-        self.stepY = randint(-2,2)
-        self.stepX = randint(-2,2)
+        self.stepY = 1#randint(-2,2)
+        self.stepX = 1#randint(-2,2)
+
+    def moveToPoint(self, fromX, fromY, toX, toY):
+        # update position of head of ant
+        self.stepX = (abs(fromX-toX)/1000)
+        self.stepY = (abs(fromY-toY)/1000)
+        #print(self.stepX)
+        #if self.direction == 4:
+        self.y = self.y + self.stepY#0.1#int(self.stepY/randint(1,5))
+        self.x = self.x + self.stepX#0.1#int(self.stepX/randint(1,5))
+        if (self.hasFood==1):
+            try:
+                App.pheromoneMap[self.y][self.x] = App.pheromoneMap[self.y][self.x] + current_milli_time()
+            except:
+                1;
 
     def moveRandom(self):
         self.direction = 4
  
     def draw(self, surface, image):
-        for i in range(0,self.length):
-            surface.blit(image,(self.x,self.y)) 
+        surface.blit(image,(self.x,self.y)) 
  
 class Game:
     def isCollision(self,x1,y1,x2,y2,bsize):
@@ -76,18 +102,20 @@ class Game:
                 return True
         return False
  
-class App:
+class App:   
     x = 50
     y = 50
     windowWidth = 800
     windowHeight = 600
-    nAnts = 500
+    nAnts = 1
     AntsLst = []
+    NodeLst = []
     apple = 0
     nAntsReachedHome = 0
     pheromoneMap = []
     evapoRate = 0.3
-    
+
+    data = []
     current_milli_time = lambda: int(round(time.time() * 1000))
     timeNow = current_milli_time()
     #initializing pharamone map
@@ -102,24 +130,31 @@ class App:
         self._display_surf = None
         self._ant_surf = None
         self._node_surf = None
-        #self._apple_surf = None
-        #self._home_surf = None
         self.game = Game()
         for i in range (self.nAnts):
             self.AntsLst.append(Ant(self.x, self.y))
-        #self.apple = Apple(275,275)
-        #self.home = Home(self.x,self.y)
- 
+
+        #putting data points
+        self.data = []        
+        self.data.append([i, self.x, self.y])
+        for i in range (40):
+            self.data.append([i, randint(0, 800), randint(0, 600)])     
+
+        for i in range (len(self.data)):
+            #print("x, y", (self.data[i][1], self.data[i][2]))
+            self.NodeLst.append(Node(self.data[i][1], self.data[i][2]))
+            #self.NodeLst.append(Node(800, 600))
+
+        self.NodeLst.append(Node(790, 590)) 
+        print("x, y", (self.data[40][1], self.data[40][2]))
+        
     def on_init(self):
         pygame.init()
         self._display_surf = pygame.display.set_mode((self.windowWidth,self.windowHeight), pygame.HWSURFACE)
- 
         pygame.display.set_caption('Ant Colony Optimization (Github: @AhsanSn)')
         self._running = True
         self._ant_surf = pygame.image.load("ant.png").convert()
         self._node_surf = pygame.image.load("node.png").convert()
-        #self._apple_surf = pygame.image.load("block.jpg").convert()
-        #self._home_surf = pygame.image.load("home.jpg").convert()
  
     def on_event(self, event):
         if event.type == QUIT:
@@ -158,10 +193,9 @@ class App:
     def on_render(self):
         self._display_surf.fill((0,0,0))
         for ant in range (self.nAnts):
-            if(self.AntsLst[ant].hasFood==0):
-                self.AntsLst[ant].draw(self._display_surf, self._ant_surf)
-        #self.apple.draw(self._display_surf, self._apple_surf)
-        #self.home.draw(self._display_surf, self._home_surf)
+            self.AntsLst[ant].draw(self._display_surf, self._ant_surf)
+        for node in range (len(self.NodeLst)):
+            self.NodeLst[node].draw(self._display_surf, self._node_surf)
         pygame.display.flip()
  
     def on_cleanup(self):
@@ -176,7 +210,8 @@ class App:
             keys = pygame.key.get_pressed()
 
             #check for nearby pheromone
-            
+
+            '''
             for ant in range (self.nAnts):
                 if(self.AntsLst[ant].hasFood == 0):
                     pheromoneNear = False
@@ -207,7 +242,9 @@ class App:
                             #print("iter", iteration)
                             self.AntsLst[ant].changeDirection()
                             self.AntsLst[ant].moveRandom()
-                        
+            '''
+            #self.AntsLst[0].changeDirection() #self.data[0][1], self.data[0][2]
+            self.AntsLst[0].moveToPoint(50,50, 790, 590)#moveRandom()
             
                                     
             #evaporate pheromone
