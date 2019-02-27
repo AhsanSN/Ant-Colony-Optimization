@@ -70,16 +70,28 @@ class Ant:
         subtractXFactor = 0
         if(abs(fromX-toX)>(abs(App.windowWidth-abs(fromX-toX)))):
             print("con1")
-            subtractXFactor = -((App.windowWidth-abs(fromX-toX)))
+            if (fromX>toX):
+                subtractXFactor = -((App.windowWidth-abs(fromX-toX)))
+            else:
+                subtractXFactor = ((App.windowWidth-abs(fromX-toX)))
         if(abs(fromX-toX)<(abs(App.windowWidth-abs(fromX-toX)))):
             print("con2")
-            subtractXFactor = abs(fromX-toX)
+            if (fromX>toX):
+                subtractXFactor = (fromX-toX)
+            else:
+                subtractXFactor = -(fromX-toX)
         if(abs(fromY-toY)>(abs(App.windowHeight-abs(fromY-toY)))):
             print("con3")
-            subtractYFactor = -((App.windowHeight-abs(fromY-toY)))
+            if (fromY>toY):
+                subtractYFactor = -((App.windowHeight-abs(fromY-toY)))
+            else:
+                subtractYFactor = ((App.windowHeight-abs(fromY-toY)))
         if(abs(fromY-toY)<(abs(App.windowHeight-abs(fromY-toY)))):
             print("con4")
-            subtractYFactor = abs(fromY-toY)
+            if (fromY>toY):
+                subtractYFactor = (fromY-toY)
+            else:
+                subtractYFactor = -(fromY-toY)
        
         #subtractXFactor = 800-(fromX-toX)
         #subtractYFactor = 600-(fromY-toY)
@@ -109,8 +121,8 @@ class Game:
         return False
  
 class App:   
-    x = 100
-    y = 100
+    x = 20
+    y = 70
     windowWidth = 800
     windowHeight = 600
     nAnts = 1
@@ -151,7 +163,7 @@ class App:
             self.NodeLst.append(Node(self.data[i][1], self.data[i][2]))
             #self.NodeLst.append(Node(800, 600))
 
-        self.NodeLst.append(Node(790, 590)) 
+        self.NodeLst.append(Node(50, 50)) 
         print("x, y", (self.data[40][1], self.data[40][2]))
         
     def on_init(self):
@@ -250,7 +262,7 @@ class App:
                             self.AntsLst[ant].moveRandom()
             '''
             #self.AntsLst[0].changeDirection() #self.data[0][1], self.data[0][2]
-            self.AntsLst[0].moveToPoint( self.data[0][1], self.data[0][2], 790,590)#moveRandom()
+            self.AntsLst[0].moveToPoint( self.data[0][1], self.data[0][2], 50,50)#moveRandom()
             
                                     
             #evaporate pheromone
