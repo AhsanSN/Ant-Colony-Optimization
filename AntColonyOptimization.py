@@ -30,8 +30,8 @@ class Apple:
  
  
 class Ant:
-    x = randint(0,800)
-    y = randint(0,800)
+    x = 0
+    y = 0 
     step = 3
     direction = 0
     length = 1
@@ -40,10 +40,12 @@ class Ant:
     updateCountMax = 2
     updateCount = 0
  
-    def __init__(self):
+    def __init__(self, x, y):
        self.previousX = 0
        self.stepX = randint(-2,2);
        self.stepY = randint(-2,2);
+       self.x = x
+       self.y = y
  
     def update(self):
         # update position of head of ant
@@ -75,14 +77,16 @@ class Game:
         return False
  
 class App:
-
+    x = 50
+    y = 50
     windowWidth = 800
     windowHeight = 600
     nAnts = 500
     AntsLst = []
     apple = 0
-
+    nAntsReachedHome = 0
     pheromoneMap = []
+    evapoRate = 0.3
     
     current_milli_time = lambda: int(round(time.time() * 1000))
     timeNow = current_milli_time()
@@ -102,9 +106,9 @@ class App:
         self._home_surf = None
         self.game = Game()
         for i in range (self.nAnts):
-            self.AntsLst.append(Ant())
+            self.AntsLst.append(Ant(self.x, self.y))
         self.apple = Apple(275,275)
-        self.home = Home(50,50)
+        self.home = Home(self.x,self.y)
  
     def on_init(self):
         pygame.init()
@@ -134,7 +138,9 @@ class App:
         for ant in range (self.nAnts):
             if self.game.isCollision(self.home.x,self.home.y,self.AntsLst[ant].x, self.AntsLst[ant].y,31):
                 if (self.AntsLst[ant].hasFood==1):
-                    self.AntsLst[ant].hasFood = 0;      
+                    self.AntsLst[ant].hasFood = 0;
+                    self.nAntsReachedHome = self.nAntsReachedHome + 1
+                    print("nAntsReachedHome,time", self.nAntsReachedHome, App.current_milli_time())
  
         # does any reaches the border?
         for ant in range (self.nAnts):
@@ -197,6 +203,12 @@ class App:
                                 #print("iter", iteration)
                                     self.AntsLst[ant].changeDirection()
                                     self.AntsLst[ant].moveRandom()
+                else:
+                    if(iteration%100==0):
+                            #print("iter", iteration)
+                            self.AntsLst[ant].changeDirection()
+                            self.AntsLst[ant].moveRandom()
+                        
             
                                     
             #evaporate pheromone
