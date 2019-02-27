@@ -101,14 +101,14 @@ class App:
         self._running = True
         self._display_surf = None
         self._ant_surf = None
-        self._antFood_surf = None
-        self._apple_surf = None
-        self._home_surf = None
+        self._node_surf = None
+        #self._apple_surf = None
+        #self._home_surf = None
         self.game = Game()
         for i in range (self.nAnts):
             self.AntsLst.append(Ant(self.x, self.y))
-        self.apple = Apple(275,275)
-        self.home = Home(self.x,self.y)
+        #self.apple = Apple(275,275)
+        #self.home = Home(self.x,self.y)
  
     def on_init(self):
         pygame.init()
@@ -117,9 +117,9 @@ class App:
         pygame.display.set_caption('Ant Colony Optimization (Github: @AhsanSn)')
         self._running = True
         self._ant_surf = pygame.image.load("ant.png").convert()
-        self._antFood_surf = pygame.image.load("antFood.png").convert()
-        self._apple_surf = pygame.image.load("block.jpg").convert()
-        self._home_surf = pygame.image.load("home.jpg").convert()
+        self._node_surf = pygame.image.load("node.png").convert()
+        #self._apple_surf = pygame.image.load("block.jpg").convert()
+        #self._home_surf = pygame.image.load("home.jpg").convert()
  
     def on_event(self, event):
         if event.type == QUIT:
@@ -130,6 +130,7 @@ class App:
             self.AntsLst[i].update()
  
         # does ant eat apple?
+        '''
         for ant in range (self.nAnts):
             if self.game.isCollision(self.apple.x,self.apple.y,self.AntsLst[ant].x, self.AntsLst[ant].y,31):
                 self.AntsLst[ant].hasFood = 1;
@@ -141,7 +142,7 @@ class App:
                     self.AntsLst[ant].hasFood = 0;
                     self.nAntsReachedHome = self.nAntsReachedHome + 1
                     print("nAntsReachedHome,time", self.nAntsReachedHome, App.current_milli_time())
- 
+        '''
         # does any reaches the border?
         for ant in range (self.nAnts):
             if(self.AntsLst[ant].y>self.windowHeight):
@@ -157,12 +158,10 @@ class App:
     def on_render(self):
         self._display_surf.fill((0,0,0))
         for ant in range (self.nAnts):
-            if(self.AntsLst[ant].hasFood==1):
-                self.AntsLst[ant].draw(self._display_surf, self._antFood_surf)
             if(self.AntsLst[ant].hasFood==0):
                 self.AntsLst[ant].draw(self._display_surf, self._ant_surf)
-        self.apple.draw(self._display_surf, self._apple_surf)
-        self.home.draw(self._display_surf, self._home_surf)
+        #self.apple.draw(self._display_surf, self._apple_surf)
+        #self.home.draw(self._display_surf, self._home_surf)
         pygame.display.flip()
  
     def on_cleanup(self):
@@ -184,8 +183,8 @@ class App:
                     highConcX = 0
                     highConcY = 0
                     highConc = 0
-                    for i in range (-2, 2):
-                        for j in range (-2, 2):
+                    for i in range (-3, 3):
+                        for j in range (-3, 3):
                             #print
                             searchY = self.AntsLst[ant].y + i
                             searchX = self.AntsLst[ant].x + i
