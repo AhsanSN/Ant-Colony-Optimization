@@ -10,7 +10,6 @@ class Home:
     x = 0
     y = 0
     step = 11
- 
     def __init__(self,x,y):
         self.x = x 
         self.y = y
@@ -57,12 +56,6 @@ class Ant:
        self.y = y
  
     def update(self):
-        print("x, y", self.stepX, self.stepY)
-        # update position of head of ant
-        #self.stepX = ((790-50)/1000)
-        #self.stepY = ((590-50)/1000)
-        #print(self.stepX)
-        #if self.direction == 4:
         self.y = self.y + self.stepY#0.1#int(self.stepY/randint(1,5))
         self.x = self.x + self.stepX#0.1#int(self.stepX/randint(1,5))
         if (self.hasFood==1):
@@ -70,19 +63,32 @@ class Ant:
                 App.pheromoneMap[self.y][self.x] = App.pheromoneMap[self.y][self.x] + current_milli_time()
             except:
                 1;
-                                            
-    def changeDirection(self):
-        self.stepY = 1#randint(-2,2)
-        self.stepX = 1#randint(-2,2)
 
     def moveToPoint(self, fromX, fromY, toX, toY):
         # update position of head of ant
-        self.stepX = (abs(fromX-toX)/1000)
-        self.stepY = (abs(fromY-toY)/1000)
+        print("init coods", fromX, fromY, toX, toY)
+        subtractXFactor = 0
+        if(abs(fromX-toX)>(abs(App.windowWidth-abs(fromX-toX)))):
+            print("con1")
+            subtractXFactor = -((App.windowWidth-abs(fromX-toX)))
+        if(abs(fromX-toX)<(abs(App.windowWidth-abs(fromX-toX)))):
+            print("con2")
+            subtractXFactor = abs(fromX-toX)
+        if(abs(fromY-toY)>(abs(App.windowHeight-abs(fromY-toY)))):
+            print("con3")
+            subtractYFactor = -((App.windowHeight-abs(fromY-toY)))
+        if(abs(fromY-toY)<(abs(App.windowHeight-abs(fromY-toY)))):
+            print("con4")
+            subtractYFactor = abs(fromY-toY)
+       
+        #subtractXFactor = 800-(fromX-toX)
+        #subtractYFactor = 600-(fromY-toY)
+        
+        self.stepX = ((subtractXFactor)/1000)
+        self.stepY = ((subtractYFactor)/1000)
         #print(self.stepX)
-        #if self.direction == 4:
-        self.y = self.y + self.stepY#0.1#int(self.stepY/randint(1,5))
         self.x = self.x + self.stepX#0.1#int(self.stepX/randint(1,5))
+        self.y = self.y + self.stepY#0.1#int(self.stepY/randint(1,5))
         if (self.hasFood==1):
             try:
                 App.pheromoneMap[self.y][self.x] = App.pheromoneMap[self.y][self.x] + current_milli_time()
@@ -103,8 +109,8 @@ class Game:
         return False
  
 class App:   
-    x = 50
-    y = 50
+    x = 100
+    y = 100
     windowWidth = 800
     windowHeight = 600
     nAnts = 1
@@ -244,7 +250,7 @@ class App:
                             self.AntsLst[ant].moveRandom()
             '''
             #self.AntsLst[0].changeDirection() #self.data[0][1], self.data[0][2]
-            self.AntsLst[0].moveToPoint(50,50, 790, 590)#moveRandom()
+            self.AntsLst[0].moveToPoint( self.data[0][1], self.data[0][2], 790,590)#moveRandom()
             
                                     
             #evaporate pheromone
