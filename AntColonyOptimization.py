@@ -104,7 +104,7 @@ class App:
     y = 50
     windowWidth = 800
     windowHeight = 600
-    nAnts = 1
+    nAnts = 3
     AntsLst = []
     NodeLst = []
     nNodes = 4
@@ -197,36 +197,45 @@ class App:
             #check for nearby pheromone
         
             #self.AntsLst[0].changeDirection() #self.data[0][1], self.data[0][2]
-            NodesNotTravelled = list(self.data)
-            #select first node
-            selectedNodeFrom = NodesNotTravelled.pop(0)
+            NodesNotTravelled = [] #for each ant
+            selectedNodeFrom = []
+            selectedNodeTo = []
+            for ant in range (App.nAnts):
+                NodesNotTravelled.append(list(self.data))
+                #select first node
+            #print(NodesNotTravelled)
+            for ant in range (App.nAnts):
+                selectedNodeFrom.append(NodesNotTravelled[ant].pop(0))
             for i in range (len(self.data)-1):
-                #select one random node to go to
-                chosenIndex = randint(0, len(NodesNotTravelled)-1)
-                selectedNodeTo = NodesNotTravelled.pop(chosenIndex)
-                
-                self.AntsLst[0].moveToPoint(selectedNodeFrom[1], selectedNodeFrom[2], selectedNodeTo[1], selectedNodeTo[2])#moveRandom()
-                self.on_loop()
-                self.on_render()
-                
-                while((abs(self.AntsLst[0].x-selectedNodeTo[1])>1)and(abs(self.AntsLst[0].y-selectedNodeTo[2]))>1):
-                    #print("x", self.AntsLst[i].x, self.data[i+1][1], "y", self.AntsLst[i].y, self.data[i+1][2])
+                for ant in range (App.nAnts):
+                    #select one random node to go to
+                    deleteIndex = (randint(0, len(NodesNotTravelled[ant])-1))
+                    #print(NodesNotTravelled, ant, deleteIndex)
+                    selectedNodeTo.append(NodesNotTravelled[ant].pop(deleteIndex))
+                    self.AntsLst[ant].moveToPoint(selectedNodeFrom[ant][1], selectedNodeFrom[ant][2], selectedNodeTo[ant][1], selectedNodeTo[ant][2])#moveRandom()
                     self.on_loop()
                     self.on_render()
-                    #set coods to center of node
-                self.AntsLst[0].x = selectedNodeTo[1]
-                self.AntsLst[0].y = selectedNodeTo[2]
+
+                for ant in range (App.nAnts):
+                    while((abs(self.AntsLst[ant].x-selectedNodeTo[ant][1])>1)and(abs(self.AntsLst[ant].y-selectedNodeTo[ant][2]))>1):
+                        #print("x", self.AntsLst[i].x, self.data[i+1][1], "y", self.AntsLst[i].y, self.data[i+1][2])
+                        self.on_loop()
+                        self.on_render()
+                #set coods to center of node
+                self.AntsLst[ant].x = selectedNodeTo[1]
+                self.AntsLst[ant].y = selectedNodeTo[2]
                 selectedNodeFrom = selectedNodeTo
                 print("hey", i)
                 
             #reaching home
-            self.AntsLst[0].moveToPoint(selectedNodeFrom[1], selectedNodeFrom[2], self.data[0][1], self.data[0][2])#moveRandom()
-            while((abs(self.AntsLst[0].x-self.data[0][1])>1)and(abs(self.AntsLst[0].y-self.data[0][2]))>1):
+            '''
+            self.AntsLst[ant].moveToPoint(selectedNodeFrom[1], selectedNodeFrom[2], self.data[0][1], self.data[0][2])#moveRandom()
+            while((abs(self.AntsLst[ant].x-self.data[0][1])>1)and(abs(self.AntsLst[0].y-self.data[0][2]))>1):
                 self.on_loop()
                 self.on_render()
-            self.AntsLst[0].x = self.data[0][1]
-            self.AntsLst[0].y = self.data[0][2]
-            
+            self.AntsLst[ant].x = self.data[0][1]
+            self.AntsLst[ant].y = self.data[0][2]
+            '''
             exit()
                                     
             #evaporate pheromone
