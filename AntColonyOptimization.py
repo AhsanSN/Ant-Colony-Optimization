@@ -60,7 +60,7 @@ class Ant:
       
     def moveToPoint(self, fromX, fromY, toX, toY):
         # update position of head of ant
-        print(fromX, fromY, toX, toY)
+        #print(fromX, fromY, toX, toY)
         subtractXFactor = 0
         subtractYFactor = 0
         if(fromX<toX):
@@ -72,8 +72,8 @@ class Ant:
         if(fromY>toY):
             subtractYFactor = -(fromY-toY)
         
-        self.stepX = ((subtractXFactor)/1000)
-        self.stepY = ((subtractYFactor)/1000)
+        self.stepX = ((subtractXFactor)/App.simulationSlowness)
+        self.stepY = ((subtractYFactor)/App.simulationSlowness)
         self.x = self.x + self.stepX
         self.y = self.y + self.stepY
         
@@ -95,7 +95,7 @@ class App:
     y = 50
     windowWidth = 800
     windowHeight = 600
-    nAnts = 2
+    nAnts = 70
     AntsLst = []
     NodeLst = []
     nNodes = 4
@@ -103,6 +103,7 @@ class App:
     nAntsReachedHome = 0
     pheromoneMap = []
     evapoRate = 0.3
+    simulationSlowness = 5000 
 
     data = []
     current_milli_time = lambda: int(round(time.time() * 1000))
@@ -184,37 +185,26 @@ class App:
         while( self._running ):
             pygame.event.pump()
             keys = pygame.key.get_pressed()
-
             #check for nearby pheromone
-        
-            #self.AntsLst[0].changeDirection() #self.data[0][1], self.data[0][2]
             NodesNotTravelled = [] #for each ant
             selectedNodeFrom = []
             selectedNodeTo = []
             for ant in range (App.nAnts):
                 NodesNotTravelled.append(list(self.data))
-                #select first node
-            #print(NodesNotTravelled)
+            #select first node
             for ant in range (App.nAnts):
                 selectedNodeFrom.append(NodesNotTravelled[ant].pop(0))
                 selectedNodeTo.append(1)
             for i in range (len(self.data)-1):
                 for ant in range (App.nAnts):
                     #select one random node to go to
-                    #print("move", selectedNodeFrom[ant][1], selectedNodeFrom[ant][2], selectedNodeTo[ant][1], selectedNodeTo[ant][2])
                     deleteIndex = (randint(0, len(NodesNotTravelled[ant])-1))
-                    #print("s1", selectedNodeTo)
-                    #print(NodesNotTravelled, ant, deleteIndex)
                     selectedNodeTo[ant] = NodesNotTravelled[ant].pop(deleteIndex)
-                    #print("s2", selectedNodeTo)
                     self.AntsLst[ant].moveToPoint(selectedNodeFrom[ant][1], selectedNodeFrom[ant][2], selectedNodeTo[ant][1], selectedNodeTo[ant][2])#moveRandom()
                     self.on_loop()
                     self.on_render()
-                #print("------------")
-
                 
                 while((abs(self.AntsLst[ant].x-selectedNodeTo[ant][1])>1)and(abs(self.AntsLst[ant].y-selectedNodeTo[ant][2]))>1):
-                    #print("x", self.AntsLst[i].x, self.data[i+1][1], "y", self.AntsLst[i].y, self.data[i+1][2])
                     self.on_loop()
                     self.on_render()
                 for ant in range (App.nAnts):
@@ -222,9 +212,6 @@ class App:
                     self.AntsLst[ant].x = selectedNodeTo[ant][1]
                     self.AntsLst[ant].y = selectedNodeTo[ant][2]
                     selectedNodeFrom[ant] = selectedNodeTo[ant]
-                    #selectedNodeTo[ant] = 
-
-                    #print("hey", i)
                 
             #reaching home
             for ant in range (App.nAnts):
