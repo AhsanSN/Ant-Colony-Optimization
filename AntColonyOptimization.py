@@ -13,7 +13,6 @@ class Home:
     def __init__(self,x,y):
         self.x = x 
         self.y = y
- 
     def draw(self, surface, image):
         surface.blit(image,(self.x, self.y))
         
@@ -241,9 +240,17 @@ class App:
                             self.AntsLst[ant].moveRandom()
             '''
             #self.AntsLst[0].changeDirection() #self.data[0][1], self.data[0][2]
-            for i in range (5):
-                self.AntsLst[0].moveToPoint( self.data[0][1], self.data[0][2], 50,50)#moveRandom()
-            
+            for i in range (10):
+                self.AntsLst[0].moveToPoint(self.data[i][1], self.data[i][2], self.data[i+1][1], self.data[i+1][2])#moveRandom()
+                self.on_loop()
+                self.on_render()
+                
+                while((abs(self.AntsLst[0].x-self.data[i+1][1])>1)and(abs(self.AntsLst[0].y-self.data[i+1][2]))>1):
+                    #print("x", self.AntsLst[i].x, self.data[i+1][1], "y", self.AntsLst[i].y, self.data[i+1][2])
+                    self.on_loop()
+                    self.on_render()
+                print("hey", i)
+            exit()
                                     
             #evaporate pheromone
             '''
