@@ -107,6 +107,7 @@ class App:
     nAnts = 1
     AntsLst = []
     NodeLst = []
+    nNodes = 4
     apple = 0
     nAntsReachedHome = 0
     pheromoneMap = []
@@ -134,7 +135,7 @@ class App:
         #putting data points
         self.data = []        
         self.data.append([i, self.x, self.y])
-        for i in range (40):
+        for i in range (App.nNodes):
             self.data.append([i, randint(0, 800), randint(0, 600)])     
 
         for i in range (len(self.data)):
@@ -161,19 +162,7 @@ class App:
             self.AntsLst[i].update()
  
         # does ant eat apple?
-        '''
-        for ant in range (self.nAnts):
-            if self.game.isCollision(self.apple.x,self.apple.y,self.AntsLst[ant].x, self.AntsLst[ant].y,31):
-                self.AntsLst[ant].hasFood = 1;
-
-        # does ant reaches home?
-        for ant in range (self.nAnts):
-            if self.game.isCollision(self.home.x,self.home.y,self.AntsLst[ant].x, self.AntsLst[ant].y,31):
-                if (self.AntsLst[ant].hasFood==1):
-                    self.AntsLst[ant].hasFood = 0;
-                    self.nAntsReachedHome = self.nAntsReachedHome + 1
-                    print("nAntsReachedHome,time", self.nAntsReachedHome, App.current_milli_time())
-        '''
+  
         # does any reaches the border?
         for ant in range (self.nAnts):
             if(self.AntsLst[ant].y>self.windowHeight):
@@ -206,59 +195,41 @@ class App:
             keys = pygame.key.get_pressed()
 
             #check for nearby pheromone
-
-            '''
-            for ant in range (self.nAnts):
-                if(self.AntsLst[ant].hasFood == 0):
-                    pheromoneNear = False
-                    highConcX = 0
-                    highConcY = 0
-                    highConc = 0
-                    for i in range (-3, 3):
-                        for j in range (-3, 3):
-                            #print
-                            searchY = self.AntsLst[ant].y + i
-                            searchX = self.AntsLst[ant].x + i
-                            if ((searchY<self.windowHeight and searchY>=0) and (searchX<self.windowWidth and searchX>=0)):
-                                if (self.pheromoneMap[searchY][searchX]>highConc):
-                                    highConc = self.pheromoneMap[searchY][searchX]
-                                    highConcX = searchX
-                                    highConcY = searchY
-                                    #print("pheromoneNear", highConc);
-                            if(highConc>0):
-                                self.AntsLst[ant].x = highConcX;
-                                self.AntsLst[ant].y = highConcY;
-                            else:
-                                if(iteration%100==0):
-                                #print("iter", iteration)
-                                    self.AntsLst[ant].changeDirection()
-                                    self.AntsLst[ant].moveRandom()
-                else:
-                    if(iteration%100==0):
-                            #print("iter", iteration)
-                            self.AntsLst[ant].changeDirection()
-                            self.AntsLst[ant].moveRandom()
-            '''
+        
             #self.AntsLst[0].changeDirection() #self.data[0][1], self.data[0][2]
-            for i in range (10):
-                self.AntsLst[0].moveToPoint(self.data[i][1], self.data[i][2], self.data[i+1][1], self.data[i+1][2])#moveRandom()
+            NodesNotTravelled = list(self.data)
+            #select first node
+            selectedNodeFrom = NodesNotTravelled.pop(0)
+            for i in range (len(self.data)-1):
+                #select one random node to go to
+                chosenIndex = randint(0, len(NodesNotTravelled)-1)
+                selectedNodeTo = NodesNotTravelled.pop(chosenIndex)
+                
+                self.AntsLst[0].moveToPoint(selectedNodeFrom[1], selectedNodeFrom[2], selectedNodeTo[1], selectedNodeTo[2])#moveRandom()
                 self.on_loop()
                 self.on_render()
                 
-                while((abs(self.AntsLst[0].x-self.data[i+1][1])>1)and(abs(self.AntsLst[0].y-self.data[i+1][2]))>1):
+                while((abs(self.AntsLst[0].x-selectedNodeTo[1])>1)and(abs(self.AntsLst[0].y-selectedNodeTo[2]))>1):
                     #print("x", self.AntsLst[i].x, self.data[i+1][1], "y", self.AntsLst[i].y, self.data[i+1][2])
                     self.on_loop()
                     self.on_render()
+                    #set coods to center of node
+                self.AntsLst[0].x = selectedNodeTo[1]
+                self.AntsLst[0].y = selectedNodeTo[2]
+                selectedNodeFrom = selectedNodeTo
                 print("hey", i)
+                
+            #reaching home
+            self.AntsLst[0].moveToPoint(selectedNodeFrom[1], selectedNodeFrom[2], self.data[0][1], self.data[0][2])#moveRandom()
+            while((abs(self.AntsLst[0].x-self.data[0][1])>1)and(abs(self.AntsLst[0].y-self.data[0][2]))>1):
+                self.on_loop()
+                self.on_render()
+            self.AntsLst[0].x = self.data[0][1]
+            self.AntsLst[0].y = self.data[0][2]
+            
             exit()
                                     
             #evaporate pheromone
-            '''
-            for i in range (self.windowHeight):    
-                for j in range (self.windowWidth):
-                    if (self.pheromoneMap[i][j]>=1):
-                        self.pheromoneMap[i][j] = self.pheromoneMap[i][j] - 1
-            '''
             self.on_loop()
             self.on_render()
             iteration = iteration +1
