@@ -95,7 +95,7 @@ class App:
     y = 50
     windowWidth = 800
     windowHeight = 600
-    nAnts = 3
+    nAnts = 2
     AntsLst = []
     NodeLst = []
     nNodes = 4
@@ -198,25 +198,26 @@ class App:
             for ant in range (App.nAnts):
                 selectedNodeFrom.append(NodesNotTravelled[ant].pop(0))
                 selectedNodeTo.append(1)
-            for i in range (len(self.data)-1):#(len(self.data)-1):
+            for i in range (len(self.data)-1):
                 for ant in range (App.nAnts):
                     #select one random node to go to
                     #print("move", selectedNodeFrom[ant][1], selectedNodeFrom[ant][2], selectedNodeTo[ant][1], selectedNodeTo[ant][2])
                     deleteIndex = (randint(0, len(NodesNotTravelled[ant])-1))
-                    print("s1", selectedNodeTo)
+                    #print("s1", selectedNodeTo)
                     #print(NodesNotTravelled, ant, deleteIndex)
                     selectedNodeTo[ant] = NodesNotTravelled[ant].pop(deleteIndex)
-                    print("s2", selectedNodeTo)
+                    #print("s2", selectedNodeTo)
                     self.AntsLst[ant].moveToPoint(selectedNodeFrom[ant][1], selectedNodeFrom[ant][2], selectedNodeTo[ant][1], selectedNodeTo[ant][2])#moveRandom()
                     self.on_loop()
                     self.on_render()
-                print("------------")
+                #print("------------")
 
+                
+                while((abs(self.AntsLst[ant].x-selectedNodeTo[ant][1])>1)and(abs(self.AntsLst[ant].y-selectedNodeTo[ant][2]))>1):
+                    #print("x", self.AntsLst[i].x, self.data[i+1][1], "y", self.AntsLst[i].y, self.data[i+1][2])
+                    self.on_loop()
+                    self.on_render()
                 for ant in range (App.nAnts):
-                    while((abs(self.AntsLst[ant].x-selectedNodeTo[ant][1])>1)and(abs(self.AntsLst[ant].y-selectedNodeTo[ant][2]))>1):
-                        #print("x", self.AntsLst[i].x, self.data[i+1][1], "y", self.AntsLst[i].y, self.data[i+1][2])
-                        self.on_loop()
-                        self.on_render()
                     #set coods to center of node
                     self.AntsLst[ant].x = selectedNodeTo[ant][1]
                     self.AntsLst[ant].y = selectedNodeTo[ant][2]
@@ -228,9 +229,10 @@ class App:
             #reaching home
             for ant in range (App.nAnts):
                 self.AntsLst[ant].moveToPoint(selectedNodeFrom[ant][1], selectedNodeFrom[ant][2], self.data[0][1], self.data[0][2])#moveRandom()
-                while((abs(self.AntsLst[ant].x-self.data[0][1])>1)and(abs(self.AntsLst[0].y-self.data[0][2]))>1):
-                    self.on_loop()
-                    self.on_render()
+            while((abs(self.AntsLst[ant].x-self.data[0][1])>1)and(abs(self.AntsLst[0].y-self.data[0][2]))>1):
+                self.on_loop()
+                self.on_render()
+            for ant in range (App.nAnts):
                 self.AntsLst[ant].x = self.data[0][1]
                 self.AntsLst[ant].y = self.data[0][2]
                 
