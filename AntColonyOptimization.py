@@ -95,7 +95,7 @@ class App:
     y = 50
     windowWidth = 800
     windowHeight = 600
-    nAnts = 5
+    nAnts = 3
     AntsLst = []
     NodeLst = []
     nNodes = 4
@@ -103,7 +103,7 @@ class App:
     nAntsReachedHome = 0
     pheromoneMap = []
     evapoRate = 0.3
-    simulationSlowness = 500 
+    simulationSlowness = 1000 
 
     data = []
     current_milli_time = lambda: int(round(time.time() * 1000))
@@ -113,7 +113,7 @@ class App:
         pheromoneMap.append([])
     for i in range (nNodes+1):    
         for j in range (nNodes+1):
-            pheromoneMap[i].append(5)
+            pheromoneMap[i].append(randint(1, 10))
 
     def __init__(self):
         self._running = True
@@ -132,7 +132,6 @@ class App:
 
         for i in range (len(self.data)):
             self.NodeLst.append(Node(self.data[i][1], self.data[i][2]))
-
         
     def on_init(self):
         pygame.init()
@@ -149,9 +148,7 @@ class App:
     def on_loop(self):
         for i in range (self.nAnts):            
             self.AntsLst[i].update()
- 
-        # does ant eat apple?
-  
+
         # does any reaches the border?
         for ant in range (self.nAnts):
             if(self.AntsLst[ant].y>self.windowHeight):
@@ -174,7 +171,30 @@ class App:
  
     def on_cleanup(self):
         pygame.quit()
- 
+
+    def selectNodeToTravel(self, selectedNodeFrom, NodesNotTravelled, pheromoneMap):
+        selectedNodeIndex = 1
+        pheromoneSum = 0
+        pheromoneProportion = []
+        print("NodesNotTravelled", NodesNotTravelled)
+        for i in range(len(NodesNotTravelled)):
+            print("i", i)
+            b = NodesNotTravelled[i][0]
+            print("b,", b)
+            a = pheromoneMap[selectedNodeFrom[0]][b]
+            pheromoneSum = pheromoneSum + a
+
+        for i in range(len(pheromoneMap)):
+            pheromoneProportion.append(pheromoneMap[selectedNodeFrom[0]][i]/pheromoneSum)
+        randNo = randint(0,1000000)/1000000
+        lower = 0
+        for i in range (len(pheromoneProportion)):
+            if ((randNo>lower) and (randNo<lower + pheromoneProportion[i])):
+                selectedNodeIndex = i
+            lower = lower + pheromoneProportion[i]
+        print(selectedNodeIndex)
+        return selectedNodeIndex
+         
     def on_execute(self):
         if self.on_init() == False:
             self._running = False
@@ -195,7 +215,8 @@ class App:
             for i in range (len(self.data)-1):
                 for ant in range (App.nAnts):
                     #select one random node to go to
-                    deleteIndex = (randint(0, len(NodesNotTravelled[ant])-1))
+                    self.selectNodeToTravel(selectedNodeFrom[ant], NodesNotTravelled[ant], App.pheromoneMap)
+                    deleteIndex = self.selectNodeToTravel(selectedNodeFrom[ant], NodesNotTravelled[ant], App.pheromoneMap) #(randint(0, len(NodesNotTravelled[ant])-1))
                     selectedNodeTo[ant] = NodesNotTravelled[ant].pop(deleteIndex)
                     self.AntsLst[ant].moveToPoint(selectedNodeFrom[ant][1], selectedNodeFrom[ant][2], selectedNodeTo[ant][1], selectedNodeTo[ant][2])#moveRandom()
                     #updating Pharmacon
@@ -213,6 +234,7 @@ class App:
                     self.AntsLst[ant].x = selectedNodeTo[ant][1]
                     self.AntsLst[ant].y = selectedNodeTo[ant][2]
                     selectedNodeFrom[ant] = selectedNodeTo[ant]
+                print("pheromoneMap", App.pheromoneMap)
                 
             #reaching home
             for ant in range (App.nAnts):
@@ -228,7 +250,7 @@ class App:
                 self.AntsLst[ant].x = self.data[0][1]
                 self.AntsLst[ant].y = self.data[0][2]
             print(App.pheromoneMap)
-            exit()
+            #exit()
                                     
             #evaporate pheromone
             self.on_loop()
