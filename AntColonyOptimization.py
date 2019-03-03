@@ -98,7 +98,7 @@ class App:
     nAnts = 3
     AntsLst = []
     NodeLst = []
-    nNodes = 4
+    nNodes = 10
     apple = 0
     nAntsReachedHome = 0
     pheromoneMap = []
@@ -113,8 +113,9 @@ class App:
         pheromoneMap.append([])
     for i in range (nNodes+1):    
         for j in range (nNodes+1):
-            pheromoneMap[i].append(randint(1, 10))
-
+            pheromoneMap[i].append(randint(1, 2))
+    pheromoneMap[3][2] = 1000
+    
     def __init__(self):
         self._running = True
         self._display_surf = None
@@ -176,23 +177,26 @@ class App:
         selectedNodeIndex = 1
         pheromoneSum = 0
         pheromoneProportion = []
-        print("NodesNotTravelled", NodesNotTravelled)
+        #print("pheromoneMap", pheromoneMap)
+        #print("NodesNotTravelled", NodesNotTravelled)
         for i in range(len(NodesNotTravelled)):
-            print("i", i)
+            #print("i", i)
             b = NodesNotTravelled[i][0]
-            print("b,", b)
+            #print("b,", b)
             a = pheromoneMap[selectedNodeFrom[0]][b]
             pheromoneSum = pheromoneSum + a
 
-        for i in range(len(pheromoneMap)):
-            pheromoneProportion.append(pheromoneMap[selectedNodeFrom[0]][i]/pheromoneSum)
+        for i in range(len(NodesNotTravelled)):
+            #print("i1", i)
+            b = NodesNotTravelled[i][0]
+            pheromoneProportion.append(pheromoneMap[selectedNodeFrom[0]][b]/pheromoneSum)
         randNo = randint(0,1000000)/1000000
         lower = 0
         for i in range (len(pheromoneProportion)):
             if ((randNo>lower) and (randNo<lower + pheromoneProportion[i])):
                 selectedNodeIndex = i
             lower = lower + pheromoneProportion[i]
-        print(selectedNodeIndex)
+        print("selectedNodeIndex", selectedNodeIndex)
         return selectedNodeIndex
          
     def on_execute(self):
@@ -234,7 +238,7 @@ class App:
                     self.AntsLst[ant].x = selectedNodeTo[ant][1]
                     self.AntsLst[ant].y = selectedNodeTo[ant][2]
                     selectedNodeFrom[ant] = selectedNodeTo[ant]
-                print("pheromoneMap", App.pheromoneMap)
+                #print("pheromoneMap", App.pheromoneMap)
                 
             #reaching home
             for ant in range (App.nAnts):
