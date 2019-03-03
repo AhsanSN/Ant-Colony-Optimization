@@ -4,7 +4,7 @@ from pygame.locals import *
 from random import randint
 import pygame
 import time
-
+import math
 
 class Home:
     x = 0
@@ -206,6 +206,15 @@ class App:
             lower = lower + pheromoneProportion[i]
         #print("selectedNodeIndex", selectedNodeIndex)
         return selectedNodeIndex
+
+    def getDistTwoNodes(node1, node2, data):
+        return (math.sqrt((float(data[node1][0])-float(data[node2][0]))**2 + (float(data[node1][1])-float(data[node2][1]))**2))
+
+    def getPathLength(path, data):
+        total = 0
+        for i in range (len(path)-1):
+            total = total + App.getDistTwoNodes(path[i],path[i+1], data)
+        return(total) #the less the total the greater the fitness   
          
     def on_execute(self):
         if self.on_init() == False:
@@ -250,7 +259,7 @@ class App:
                     self.AntsLst[ant].x = selectedNodeTo[ant][1]
                     self.AntsLst[ant].y = selectedNodeTo[ant][2]
                     selectedNodeFrom[ant] = selectedNodeTo[ant]
-                print("WholepathNode", WholepathNode)
+                #print("WholepathNode", WholepathNode)
                 #print("pheromoneMap", App.pheromoneMap)
                 
             #reaching home
@@ -259,7 +268,7 @@ class App:
                 #updating pharmacon
                 App.pheromoneMap[selectedNodeFrom[ant][0]][self.data[0][0]] = App.pheromoneMap[selectedNodeFrom[ant][0]][self.data[0][0]] + 100
                 App.pheromoneMap[self.data[0][0]][selectedNodeFrom[ant][0]] = App.pheromoneMap[self.data[0][0]][selectedNodeFrom[ant][0]] + 100
-
+                WholepathNode[ant].append(0)
             while((abs(self.AntsLst[ant].x-self.data[0][1])>1)and(abs(self.AntsLst[0].y-self.data[0][2]))>1):
                 self.on_loop()
                 self.on_render()
@@ -267,6 +276,9 @@ class App:
                 self.AntsLst[ant].x = self.data[0][1]
                 self.AntsLst[ant].y = self.data[0][2]
             #print(App.pheromoneMap)
+            print("WholepathNode", WholepathNode)
+            App.getPathLength(WholepathNode[0], self.data)
+
             exit()
                                     
             #evaporate pheromone
