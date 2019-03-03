@@ -102,8 +102,8 @@ class App:
     apple = 0
     nAntsReachedHome = 0
     pheromoneMap = []
-    evapoRate = 0.3
-    simulationSlowness = 1000 
+    evapoRate = 40
+    simulationSlowness = 100 #keep is greater than 100
 
     data = []
     current_milli_time = lambda: int(round(time.time() * 1000))
@@ -131,10 +131,10 @@ class App:
         self.data = []        
         self.data.append([0, self.x, self.y])
 
-        self.data.append([1, 750, 50])
-        self.data.append([2, 750, 550])
-        self.data.append([3, 50, 550])
-        self.data.append([4, 350, 350])  
+        self.data.append([1, 750, 80])
+        self.data.append([2, 750, 220])
+        self.data.append([3, 500, 320])
+        self.data.append([4, 150, 150])  
         '''
         for i in range (App.nNodes):
             self.data.append([i+1, randint(0, 800), randint(0, 600)])     
@@ -276,10 +276,22 @@ class App:
                 self.AntsLst[ant].x = self.data[0][1]
                 self.AntsLst[ant].y = self.data[0][2]
             #print(App.pheromoneMap)
-            print("WholepathNode", WholepathNode)
-            App.getPathLength(WholepathNode[0], self.data)
+            #print("WholepathNode", WholepathNode)
 
-            exit()
+            #adding weight to all visited paths
+            for ant in range (App.nAnts):
+                pathDistance = App.getPathLength(WholepathNode[ant], self.data)
+                for antPath in range (len(WholepathNode[ant])-1):
+                    edgeDistance = App.getDistTwoNodes(WholepathNode[ant][antPath],WholepathNode[ant][antPath+1], self.data)
+                    App.pheromoneMap[WholepathNode[ant][antPath]][WholepathNode[ant][antPath+1]] = App.pheromoneMap[WholepathNode[ant][antPath]][WholepathNode[ant][antPath+1]] + edgeDistance/pathDistance * 100
+                    App.pheromoneMap[WholepathNode[ant][antPath+1]][WholepathNode[ant][antPath]] = App.pheromoneMap[WholepathNode[ant][antPath]][WholepathNode[ant][antPath+1]] + edgeDistance/pathDistance * 100
+            print("App.pheromoneMap", App.pheromoneMap)
+
+            #evaporating
+            for i in range (App.nNodes+1):    
+                for j in range (App.nNodes+1):
+                    App.pheromoneMap[i][j] = (App.pheromoneMap[i][j])- (((App.pheromoneMap[i][j])/100) * App.evapoRate)
+            #exit()
                                     
             #evaporate pheromone
             self.on_loop()
