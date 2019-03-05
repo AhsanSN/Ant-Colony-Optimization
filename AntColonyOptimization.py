@@ -90,21 +90,23 @@ class Game:
                 return True
         return False
  
-class App:   
+class App:
+    #params
     x = 50
     y = 50
     windowWidth = 800
     windowHeight = 600
-    nAnts = 3
+    nAnts = 20
+    nNodes = 20
+    evapoRate = 50
+    simulationSlowness = 400 #keep is greater than 400
+
+
     AntsLst = []
     NodeLst = []
-    nNodes = 4
-    apple = 0
-    nAntsReachedHome = 0
     pheromoneMap = []
-    evapoRate = 40
-    simulationSlowness = 100 #keep is greater than 100
-
+    globalMax = 0
+    globalMin = 100000
     data = []
     current_milli_time = lambda: int(round(time.time() * 1000))
     timeNow = current_milli_time()
@@ -113,10 +115,10 @@ class App:
         pheromoneMap.append([])
     for i in range (nNodes+1):    
         for j in range (nNodes+1):
-            pheromoneMap[i].append(randint(1, 2))
+            pheromoneMap[i].append(randint(1, 10))
 
-    pheromoneMap[0][2] = 0
-    pheromoneMap[2][0] = 0
+    #pheromoneMap[0][2] = 0
+    #pheromoneMap[2][0] = 0
     
     def __init__(self):
         self._running = True
@@ -131,6 +133,9 @@ class App:
         self.data = []        
         self.data.append([0, self.x, self.y])
 
+        #configurations
+        '''
+        #oval config
         self.data.append([1, 750, 80])
         self.data.append([2, 750, 220])
         self.data.append([3, 500, 320])
@@ -138,7 +143,7 @@ class App:
         '''
         for i in range (App.nNodes):
             self.data.append([i+1, randint(0, 800), randint(0, 600)])     
-        '''
+        
         for i in range (len(self.data)):
             self.NodeLst.append(Node(self.data[i][1], self.data[i][2]))
         
@@ -213,7 +218,15 @@ class App:
     def getPathLength(path, data):
         total = 0
         for i in range (len(path)-1):
-            total = total + App.getDistTwoNodes(path[i],path[i+1], data)
+            dist = App.getDistTwoNodes(path[i],path[i+1], data)
+            #print("path[i], path[i+1], dist", path[i],path[i+1], dist)
+            total = total + dist
+        #print("total", total, "path", path)
+        #stats
+        if(App.globalMax<total):
+            App.globalMax=total
+        if(App.globalMin>total):
+            App.globalMin=total
         return(total) #the less the total the greater the fitness   
          
     def on_execute(self):
@@ -277,22 +290,26 @@ class App:
                 self.AntsLst[ant].y = self.data[0][2]
             #print(App.pheromoneMap)
             #print("WholepathNode", WholepathNode)
-
+            avgScore = 0
             #adding weight to all visited paths
             for ant in range (App.nAnts):
                 pathDistance = App.getPathLength(WholepathNode[ant], self.data)
+                avgScore = avgScore + pathDistance
                 for antPath in range (len(WholepathNode[ant])-1):
                     edgeDistance = App.getDistTwoNodes(WholepathNode[ant][antPath],WholepathNode[ant][antPath+1], self.data)
                     App.pheromoneMap[WholepathNode[ant][antPath]][WholepathNode[ant][antPath+1]] = App.pheromoneMap[WholepathNode[ant][antPath]][WholepathNode[ant][antPath+1]] + edgeDistance/pathDistance * 100
                     App.pheromoneMap[WholepathNode[ant][antPath+1]][WholepathNode[ant][antPath]] = App.pheromoneMap[WholepathNode[ant][antPath]][WholepathNode[ant][antPath+1]] + edgeDistance/pathDistance * 100
-            print("App.pheromoneMap", App.pheromoneMap)
+            #print("App.pheromoneMap", App.pheromoneMap)
+            avgScore = avgScore/App.nAnts
 
             #evaporating
             for i in range (App.nNodes+1):    
                 for j in range (App.nNodes+1):
                     App.pheromoneMap[i][j] = (App.pheromoneMap[i][j])- (((App.pheromoneMap[i][j])/100) * App.evapoRate)
             #exit()
-                                    
+
+            print("max, min, avgScore", int(App.globalMax), int(App.globalMin), int(avgScore))
+            #print("pheromoneMap", App.pheromoneMap)
             #evaporate pheromone
             self.on_loop()
             self.on_render()
