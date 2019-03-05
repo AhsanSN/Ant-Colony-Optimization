@@ -99,7 +99,7 @@ class App:
     nAnts = 20
     nNodes = 20
     evapoRate = 50
-    simulationSlowness = 400 #keep is greater than 400
+    simulationSlowness = 100 #keep is greater than 400
 
 
     AntsLst = []
@@ -115,7 +115,7 @@ class App:
         pheromoneMap.append([])
     for i in range (nNodes+1):    
         for j in range (nNodes+1):
-            pheromoneMap[i].append(randint(1, 10))
+            pheromoneMap[i].append(randint(1, 1))
 
     #pheromoneMap[0][2] = 0
     #pheromoneMap[2][0] = 0
@@ -181,8 +181,43 @@ class App:
             self.AntsLst[ant].draw(self._display_surf, self._ant_surf)
         for node in range (len(self.NodeLst)):
             self.NodeLst[node].draw(self._display_surf, self._node_surf)
+        self.on_render_path()
         pygame.display.flip()
- 
+
+    def on_render_path(self):
+        pheromoneSum = 0
+        pheromoneProportion = []
+        maxPher = 0
+        #frame
+        for i in range (App.nNodes+1):
+            pheromoneProportion.append([])
+        for i in range (App.nNodes+1):    
+            for j in range (App.nNodes+1):
+                if (App.pheromoneMap[i][j]>maxPher):
+                    maxPher = App.pheromoneMap[i][j]
+                pheromoneProportion[i].append(1)
+
+        print("maxPher", maxPher)
+        #proportion
+                
+        for i in range(len(App.pheromoneMap)):
+            for j in range(len(App.pheromoneMap)):
+                #print(i, j)
+                a= (App.pheromoneMap[i][j]+ (-maxPher+245))
+                b = (App.pheromoneMap[i][j]+ (-maxPher+245))
+                if(a<0):
+                    a=0
+                if(b<0):
+                    b=0
+                pheromoneProportion[i][j] = [int(a) , int(b)]
+        #print(pheromoneProportion)
+        for i in range (App.nNodes+1):    
+            for j in range (App.nNodes+1):
+                if ((pheromoneProportion[i][j][0]>255) or (pheromoneProportion[i][j][1]>255)):
+                    print(pheromoneProportion[i][j])
+                pygame.draw.line(self._display_surf,(pheromoneProportion[i][j][0],0,pheromoneProportion[i][j][1]), [App.NodeLst[i].x,App.NodeLst[i].y],[App.NodeLst[j].x,App.NodeLst[j].y],1)
+                #App.pheromoneMap[i][j] = (App.pheromoneMap[i][j])- (((App.pheromoneMap[i][j])/100) * App.evapoRate)
+        
     def on_cleanup(self):
         pygame.quit()
 
@@ -248,6 +283,7 @@ class App:
             for ant in range (App.nAnts):
                 selectedNodeFrom.append(NodesNotTravelled[ant].pop(0))
                 selectedNodeTo.append(1)
+            
             for i in range (len(self.data)-1):
                 for ant in range (App.nAnts):
                     #select one random node to go to
