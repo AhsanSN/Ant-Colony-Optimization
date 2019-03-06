@@ -96,10 +96,10 @@ class App:
     y = 50
     windowWidth = 800
     windowHeight = 600
-    nAnts = 20
-    nNodes = 20
-    evapoRate = 50
-    simulationSlowness = 100 #keep is greater than 400
+    nAnts = 10
+    nNodes = 10
+    evapoRate = 30
+    simulationSlowness = 500 #keep is greater than 400
 
 
     AntsLst = []
@@ -115,10 +115,10 @@ class App:
         pheromoneMap.append([])
     for i in range (nNodes+1):    
         for j in range (nNodes+1):
-            pheromoneMap[i].append(randint(1, 1))
+            pheromoneMap[i].append(randint(20, 50))
 
-    #pheromoneMap[0][2] = 0
-    #pheromoneMap[2][0] = 0
+    #pheromoneMap[0][2] = 99999
+    #pheromoneMap[2][0] = 99999
     
     def __init__(self):
         self._running = True
@@ -197,7 +197,7 @@ class App:
                     maxPher = App.pheromoneMap[i][j]
                 pheromoneProportion[i].append(1)
 
-        print("maxPher", maxPher)
+        #print("maxPher", maxPher)
         #proportion
                 
         for i in range(len(App.pheromoneMap)):
@@ -350,6 +350,12 @@ class App:
             self.on_loop()
             self.on_render()
             iteration = iteration +1
+            maxPher = 0
+            for i in range (App.nNodes+1):    
+                for j in range (App.nNodes+1):
+                    if (App.pheromoneMap[i][j]>maxPher):
+                        maxPher = App.pheromoneMap[i][j]
+            print("maxPher", maxPher)
             time.sleep (50.0 / 100000.0);
         self.on_cleanup()
  
