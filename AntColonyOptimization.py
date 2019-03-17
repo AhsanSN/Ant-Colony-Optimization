@@ -99,7 +99,7 @@ class App:
     nAnts = 6
     nNodes = 8
     evapoRate = 0.85550 #slowness (must be b/w 0 and 1)
-    simulationSlowness = 150 #keep is greater than 150
+    simulationSlowness = 450 #keep is greater than 150
 
 
     AntsLst = []
@@ -117,9 +117,6 @@ class App:
     for i in range (nNodes+1):    
         for j in range (nNodes+1):
             pheromoneMap[i].append(randint(20, 50))
-
-    #pheromoneMap[0][2] = 99999
-    #pheromoneMap[2][0] = 99999
     
     def __init__(self, autoSim):
         self._running = True
@@ -173,14 +170,28 @@ class App:
                 self.NodeLst.append(Node(App.data[i][1], App.data[i][2]))
         if(autoSim==False):
             App.data = []
-            nPoints = int(input(print("enter number of Points to place")))
+            nPoints = int(input(("enter number of Points to place")))
+            print("1st points is home.")
             pointCounter = 0
             while(pointCounter<nPoints):
                 pygame.event.get()
+                self._display_surf.fill((0,0,0))       
+                myfont = pygame.font.SysFont('Comic Sans MS', 30)
+                textsurface = myfont.render('Points Placed: '+str(pointCounter), False, (123, 123, 123))
+                self._display_surf.blit(textsurface,(0,0))
+                pygame.display.flip()
+                    
                 if(pygame.mouse.get_pressed()[0]==1):
+                    print(pygame.mouse.get_pos())
                     App.data.append([pointCounter, pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]])
                     pointCounter = pointCounter +1
+                    self._display_surf.fill((0,0,0))       
+                    myfont = pygame.font.SysFont('Comic Sans MS', 30)
+                    textsurface = myfont.render('Points Placed: '+str(pointCounter), False, (123, 123, 123))
+                    self._display_surf.blit(textsurface,(0,0))
+                    pygame.display.flip()
                     time.sleep(0.2)
+
             for i in range (len(App.data)):
                 self.NodeLst.append(Node(App.data[i][1], App.data[i][2]))
     
@@ -213,7 +224,7 @@ class App:
         pass
  
     def on_render(self):
-        self._display_surf.fill((0,0,0))
+        self._display_surf.fill((0,0,0))       
         for ant in range (self.nAnts):
             self.AntsLst[ant].draw(self._display_surf, self._ant_surf)
         for node in range (len(self.NodeLst)):
@@ -266,95 +277,93 @@ class App:
             self._running = False
         iteration = 0
         while( self._running ):
-            try:
-                pygame.event.get()
-                #check for nearby pheromone
-                NodesNotTravelled = [] #for each ant
-                selectedNodeFrom = []
-                selectedNodeTo = []
-                WholepathNode = []
+            pygame.event.get()
+            
+            #check for nearby pheromone
+            NodesNotTravelled = [] #for each ant
+            selectedNodeFrom = []
+            selectedNodeTo = []
+            WholepathNode = []
+            for ant in range (App.nAnts):
+                NodesNotTravelled.append(list(App.data))
+                WholepathNode.append(list([0]))
+            #select first node
+            for ant in range (App.nAnts):
+                selectedNodeFrom.append(NodesNotTravelled[ant].pop(0))
+                selectedNodeTo.append(1)
+            
+            for i in range (len(App.data)-1):
                 for ant in range (App.nAnts):
-                    NodesNotTravelled.append(list(App.data))
-                    WholepathNode.append(list([0]))
-                #select first node
-                for ant in range (App.nAnts):
-                    selectedNodeFrom.append(NodesNotTravelled[ant].pop(0))
-                    selectedNodeTo.append(1)
+                    #select one random node to go to
+                    deleteIndex = self.selectNodeToTravel(selectedNodeFrom[ant], NodesNotTravelled[ant], App.pheromoneMap) #(randint(0, len(NodesNotTravelled[ant])-1))
+                    selectedNodeTo[ant] = NodesNotTravelled[ant].pop(deleteIndex)
+                    WholepathNode[ant].append(selectedNodeTo[ant][0])
+                    self.AntsLst[ant].moveToPoint(selectedNodeFrom[ant][1], selectedNodeFrom[ant][2], selectedNodeTo[ant][1], selectedNodeTo[ant][2])#moveRandom()
                 
-                for i in range (len(App.data)-1):
-                    for ant in range (App.nAnts):
-                        #select one random node to go to
-                        deleteIndex = self.selectNodeToTravel(selectedNodeFrom[ant], NodesNotTravelled[ant], App.pheromoneMap) #(randint(0, len(NodesNotTravelled[ant])-1))
-                        selectedNodeTo[ant] = NodesNotTravelled[ant].pop(deleteIndex)
-                        WholepathNode[ant].append(selectedNodeTo[ant][0])
-                        self.AntsLst[ant].moveToPoint(selectedNodeFrom[ant][1], selectedNodeFrom[ant][2], selectedNodeTo[ant][1], selectedNodeTo[ant][2])#moveRandom()
-                    
-                        self.on_loop()
-                        self.on_render()
-                        pygame.event.get()
-                    
-                    while((abs(self.AntsLst[ant].x-selectedNodeTo[ant][1])>1)and(abs(self.AntsLst[ant].y-selectedNodeTo[ant][2]))>1):
-                        self.on_loop()
-                        self.on_render()
-                    for ant in range (App.nAnts):
-                        #set coods to center of node
-                        self.AntsLst[ant].x = selectedNodeTo[ant][1]
-                        self.AntsLst[ant].y = selectedNodeTo[ant][2]
-                        selectedNodeFrom[ant] = selectedNodeTo[ant]
-           
-                    #evaporating
-                    for i in range (App.nNodes+1):    
-                        for j in range (App.nNodes+1):
-                            App.pheromoneMap[i][j] = (App.pheromoneMap[i][j]* App.evapoRate)
-                    
-                #reaching home
-                for ant in range (App.nAnts):
-                    self.AntsLst[ant].moveToPoint(selectedNodeFrom[ant][1], selectedNodeFrom[ant][2], App.data[0][1], App.data[0][2])
-                    WholepathNode[ant].append(0)
-                while((abs(self.AntsLst[ant].x-App.data[0][1])>1)and(abs(self.AntsLst[0].y-App.data[0][2]))>1):
+                    self.on_loop()
+                    self.on_render()
+                    pygame.event.get()
+                
+                while((abs(self.AntsLst[ant].x-selectedNodeTo[ant][1])>1)and(abs(self.AntsLst[ant].y-selectedNodeTo[ant][2]))>1):
                     self.on_loop()
                     self.on_render()
                 for ant in range (App.nAnts):
-                    self.AntsLst[ant].x = App.data[0][1]
-                    self.AntsLst[ant].y = App.data[0][2]
-                avgScore = 0
-                #adding weight to all visited paths
-                for ant in range (App.nAnts):
-                    pathDistance = App.getPathLength(WholepathNode[ant], App.data)
-                    App.WholepathNode = WholepathNode
-                    avgScore = avgScore + pathDistance
-                    for antPath in range (len(WholepathNode[ant])-1):
-                        edgeDistance = App.getDistTwoNodes(WholepathNode[ant][antPath],WholepathNode[ant][antPath+1], App.data)
-                        if((pathDistance - (edgeDistance/pathDistance))<0):
-                            print("errrror")
-                        App.pheromoneMap[WholepathNode[ant][antPath]][WholepathNode[ant][antPath+1]] = App.pheromoneMap[WholepathNode[ant][antPath]][WholepathNode[ant][antPath+1]] + (pathDistance - (edgeDistance/pathDistance))# * 100
-                        App.pheromoneMap[WholepathNode[ant][antPath+1]][WholepathNode[ant][antPath]] = App.pheromoneMap[WholepathNode[ant][antPath]][WholepathNode[ant][antPath+1]] + (pathDistance - (edgeDistance/pathDistance))# * 100
-                avgScore = avgScore/App.nAnts
-
-                #evaporate pheromone
-                self.on_loop()
-                self.on_render()
-                iteration = iteration +1
-                
-                maxPher = 0
-                maxPherPath = []
+                    #set coods to center of node
+                    self.AntsLst[ant].x = selectedNodeTo[ant][1]
+                    self.AntsLst[ant].y = selectedNodeTo[ant][2]
+                    selectedNodeFrom[ant] = selectedNodeTo[ant]
+       
+                #evaporating
                 for i in range (App.nNodes+1):    
                     for j in range (App.nNodes+1):
-                        if (App.pheromoneMap[i][j]>maxPher):
-                            maxPher = App.pheromoneMap[i][j]
-                            maxPherPath = [i, j]
-                time.sleep (50.0 / 100000.0);
-                if (iteration%10==0):
-                    print("it:",iteration,"max, min, avgScore", (App.globalMax), (App.globalMin), (avgScore),"maxPath",App.globalMaxPath,  "minPath", App.globalMinPath)
-                    print("maxPher", maxPher, "maxPherPath", maxPherPath)
-                    for i in range (len(WholepathNode)):
-                        print("Path",i,  WholepathNode[i])
-            except:
-                1;
-                print("GAME OVER")
+                        App.pheromoneMap[i][j] = (App.pheromoneMap[i][j]* App.evapoRate)
+                
+            #reaching home
+            for ant in range (App.nAnts):
+                self.AntsLst[ant].moveToPoint(selectedNodeFrom[ant][1], selectedNodeFrom[ant][2], App.data[0][1], App.data[0][2])
+                WholepathNode[ant].append(0)
+            while((abs(self.AntsLst[ant].x-App.data[0][1])>1)and(abs(self.AntsLst[0].y-App.data[0][2]))>1):
+                self.on_loop()
+                self.on_render()
+            for ant in range (App.nAnts):
+                self.AntsLst[ant].x = App.data[0][1]
+                self.AntsLst[ant].y = App.data[0][2]
+            avgScore = 0
+            #adding weight to all visited paths
+            for ant in range (App.nAnts):
+                pathDistance = App.getPathLength(WholepathNode[ant], App.data)
+                App.WholepathNode = WholepathNode
+                avgScore = avgScore + pathDistance
+                for antPath in range (len(WholepathNode[ant])-1):
+                    edgeDistance = App.getDistTwoNodes(WholepathNode[ant][antPath],WholepathNode[ant][antPath+1], App.data)
+                    if((pathDistance - (edgeDistance/pathDistance))<0):
+                        print("errrror")
+                    App.pheromoneMap[WholepathNode[ant][antPath]][WholepathNode[ant][antPath+1]] = App.pheromoneMap[WholepathNode[ant][antPath]][WholepathNode[ant][antPath+1]] + (pathDistance - (edgeDistance/pathDistance))# * 100
+                    App.pheromoneMap[WholepathNode[ant][antPath+1]][WholepathNode[ant][antPath]] = App.pheromoneMap[WholepathNode[ant][antPath]][WholepathNode[ant][antPath+1]] + (pathDistance - (edgeDistance/pathDistance))# * 100
+            avgScore = avgScore/App.nAnts
+
+            #evaporate pheromone
+            self.on_loop()
+            self.on_render()
+            iteration = iteration +1
+            
+            maxPher = 0
+            maxPherPath = []
+            for i in range (App.nNodes+1):    
+                for j in range (App.nNodes+1):
+                    if (App.pheromoneMap[i][j]>maxPher):
+                        maxPher = App.pheromoneMap[i][j]
+                        maxPherPath = [i, j]
+            time.sleep (50.0 / 100000.0);
+            if (iteration%10==0):
+                print("it:",iteration,"max, min, avgScore", (App.globalMax), (App.globalMin), (avgScore),"maxPath",App.globalMaxPath,  "minPath", App.globalMinPath)
+                print("maxPher", maxPher, "maxPherPath", maxPherPath)
+                for i in range (len(WholepathNode)):
+                    print("Path",i,  WholepathNode[i])
+
         self.on_cleanup()
  
-if __name__ == "__main__" :
+if __name__ == "__main__":
     simimp = str(input(("press a for random simulation and b for placing points manually.")))
     if(simimp=="b"):
         theApp = App(False)
