@@ -98,8 +98,8 @@ class App:
     windowHeight = 600
     nAnts = 6
     nNodes = 8
-    evapoRate = 0.55550 #slowness (must be b/w 0 and 1)
-    simulationSlowness = 130 #keep is greater than 400
+    evapoRate = 0.85550 #slowness (must be b/w 0 and 1)
+    simulationSlowness = 150 #keep is greater than 150
 
 
     AntsLst = []
@@ -111,8 +111,6 @@ class App:
     globalMinPath = []
     data = []
     WholepathNode = []
-    current_milli_time = lambda: int(round(time.time() * 1000))
-    timeNow = current_milli_time()
     #initializing pharamone map
     for i in range (nNodes+1):
         pheromoneMap.append([])
@@ -138,7 +136,8 @@ class App:
 
         #configurations
         
-        #oval config
+        #oval-1 config #reached min 1000 in 570 generations.
+        
         App.data.append([1, 200, 150])
         App.data.append([2, 350, 150])
         App.data.append([3, 400, 150])
@@ -148,12 +147,13 @@ class App:
         App.data.append([6, 200, 400])
         App.data.append([7, 150, 400])
         App.data.append([8, 100, 400])
-        
+
         '''
-        App.data.append([1, 750, 80])
-        App.data.append([2, 350, 85])
-        App.data.append([3, 550, 70])
-        App.data.append([4, 560, 75])
+        #oval-2 config
+        App.data.append([1, 350, 85])
+        App.data.append([2, 550, 70])
+        App.data.append([3, 620, 75])
+        App.data.append([4, 750, 80])
         
         App.data.append([5, 750, 220])
         App.data.append([6, 500, 320])
@@ -200,43 +200,9 @@ class App:
             self.AntsLst[ant].draw(self._display_surf, self._ant_surf)
         for node in range (len(self.NodeLst)):
             self.NodeLst[node].draw(self._display_surf, self._node_surf)
-        self.on_render_path()
         pygame.display.flip()
 
-    def on_render_path(self):
-        pheromoneSum = 0
-        pheromoneProportion = []
-        maxPher = 0
-        #frame
-        for i in range (App.nNodes+1):
-            pheromoneProportion.append([])
-        for i in range (App.nNodes+1):    
-            for j in range (App.nNodes+1):
-                if (App.pheromoneMap[i][j]>maxPher):
-                    maxPher = App.pheromoneMap[i][j]
-                pheromoneProportion[i].append(1)
-
-        #print("maxPher", maxPher)
-        #proportion
-                
-        for i in range(len(App.pheromoneMap)):
-            for j in range(len(App.pheromoneMap)):
-                #print(i, j)
-                a= (App.pheromoneMap[i][j]+ (-maxPher+245))
-                b = (App.pheromoneMap[i][j]+ (-maxPher+245))
-                if(a<0):
-                    a=0
-                if(b<0):
-                    b=0
-                pheromoneProportion[i][j] = [int(a) , int(b)]
-        #print(pheromoneProportion)
-        for i in range (App.nNodes+1):    
-            for j in range (App.nNodes+1):
-                if ((pheromoneProportion[i][j][0]>255) or (pheromoneProportion[i][j][1]>255)):
-                    print(pheromoneProportion[i][j])
-                pygame.draw.line(self._display_surf,(pheromoneProportion[i][j][0],0,pheromoneProportion[i][j][1]), [App.NodeLst[i].x,App.NodeLst[i].y],[App.NodeLst[j].x,App.NodeLst[j].y],1)
-                #App.pheromoneMap[i][j] = (App.pheromoneMap[i][j])- (((App.pheromoneMap[i][j])/100) * App.evapoRate)
-        
+       
     def on_cleanup(self):
         pygame.quit()
 
@@ -244,17 +210,12 @@ class App:
         selectedNodeIndex = 1
         pheromoneSum = 0
         pheromoneProportion = []
-        #print("pheromoneMap", pheromoneMap)
-        #print("NodesNotTravelled", NodesNotTravelled)
         for i in range(len(NodesNotTravelled)):
-            #print("i", i)
             b = NodesNotTravelled[i][0]
-            #print("b,", b)
             a = pheromoneMap[selectedNodeFrom[0]][b]
             pheromoneSum = pheromoneSum + a
 
         for i in range(len(NodesNotTravelled)):
-            #print("i1", i)
             b = NodesNotTravelled[i][0]
             pheromoneProportion.append(pheromoneMap[selectedNodeFrom[0]][b]/pheromoneSum)
         randNo = randint(0,1000000)/1000000
@@ -263,7 +224,6 @@ class App:
             if ((randNo>lower) and (randNo<lower + pheromoneProportion[i])):
                 selectedNodeIndex = i
             lower = lower + pheromoneProportion[i]
-        #print("selectedNodeIndex", selectedNodeIndex)
         return selectedNodeIndex
 
     def getDistTwoNodes(node1, node2, data):
@@ -273,9 +233,7 @@ class App:
         total = 0
         for i in range (len(path)-1):
             dist = App.getDistTwoNodes(path[i],path[i+1], data)
-            #print("path[i], path[i+1], dist", path[i],path[i+1], dist)
             total = total + dist
-        #print("total", total, "path", path)
         #stats
         if(App.globalMax<total):
             App.globalMax=total
@@ -311,13 +269,9 @@ class App:
                         #select one random node to go to
                         deleteIndex = self.selectNodeToTravel(selectedNodeFrom[ant], NodesNotTravelled[ant], App.pheromoneMap) #(randint(0, len(NodesNotTravelled[ant])-1))
                         selectedNodeTo[ant] = NodesNotTravelled[ant].pop(deleteIndex)
-                        #print("selectedNodeTo[ant]", selectedNodeTo[ant])
                         WholepathNode[ant].append(selectedNodeTo[ant][0])
                         self.AntsLst[ant].moveToPoint(selectedNodeFrom[ant][1], selectedNodeFrom[ant][2], selectedNodeTo[ant][1], selectedNodeTo[ant][2])#moveRandom()
-                        #updating Pharmacon
-                        #App.pheromoneMap[selectedNodeFrom[ant][0]][selectedNodeTo[ant][0]] = App.pheromoneMap[selectedNodeFrom[ant][0]][selectedNodeTo[ant][0]] + 100
-                        #App.pheromoneMap[selectedNodeTo[ant][0]][selectedNodeFrom[ant][0]] = App.pheromoneMap[selectedNodeTo[ant][0]][selectedNodeFrom[ant][0]] + 100
-
+                    
                         self.on_loop()
                         self.on_render()
                         
@@ -330,15 +284,15 @@ class App:
                         self.AntsLst[ant].x = selectedNodeTo[ant][1]
                         self.AntsLst[ant].y = selectedNodeTo[ant][2]
                         selectedNodeFrom[ant] = selectedNodeTo[ant]
-                    #print("WholepathNode", WholepathNode)
-                    #print("pheromoneMap", App.pheromoneMap)
+           
+                    #evaporating
+                    for i in range (App.nNodes+1):    
+                        for j in range (App.nNodes+1):
+                            App.pheromoneMap[i][j] = (App.pheromoneMap[i][j]* App.evapoRate)
                     
                 #reaching home
                 for ant in range (App.nAnts):
-                    self.AntsLst[ant].moveToPoint(selectedNodeFrom[ant][1], selectedNodeFrom[ant][2], App.data[0][1], App.data[0][2])#moveRandom()
-                    #updating pharmacon
-                    #App.pheromoneMap[selectedNodeFrom[ant][0]][App.data[0][0]] = App.pheromoneMap[selectedNodeFrom[ant][0]][App.data[0][0]] + 100
-                    #App.pheromoneMap[App.data[0][0]][selectedNodeFrom[ant][0]] = App.pheromoneMap[App.data[0][0]][selectedNodeFrom[ant][0]] + 100
+                    self.AntsLst[ant].moveToPoint(selectedNodeFrom[ant][1], selectedNodeFrom[ant][2], App.data[0][1], App.data[0][2])
                     WholepathNode[ant].append(0)
                 while((abs(self.AntsLst[ant].x-App.data[0][1])>1)and(abs(self.AntsLst[0].y-App.data[0][2]))>1):
                     self.on_loop()
@@ -346,8 +300,6 @@ class App:
                 for ant in range (App.nAnts):
                     self.AntsLst[ant].x = App.data[0][1]
                     self.AntsLst[ant].y = App.data[0][2]
-                #print(App.pheromoneMap)
-                #print("WholepathNode", WholepathNode)
                 avgScore = 0
                 #adding weight to all visited paths
                 for ant in range (App.nAnts):
@@ -357,24 +309,16 @@ class App:
                     for antPath in range (len(WholepathNode[ant])-1):
                         edgeDistance = App.getDistTwoNodes(WholepathNode[ant][antPath],WholepathNode[ant][antPath+1], App.data)
                         if((pathDistance - (edgeDistance/pathDistance))<0):
-                            print("asdskjasdkajsdnkajsndkjasndkjasndkjdn")
+                            print("errrror")
                         App.pheromoneMap[WholepathNode[ant][antPath]][WholepathNode[ant][antPath+1]] = App.pheromoneMap[WholepathNode[ant][antPath]][WholepathNode[ant][antPath+1]] + (pathDistance - (edgeDistance/pathDistance))# * 100
                         App.pheromoneMap[WholepathNode[ant][antPath+1]][WholepathNode[ant][antPath]] = App.pheromoneMap[WholepathNode[ant][antPath]][WholepathNode[ant][antPath+1]] + (pathDistance - (edgeDistance/pathDistance))# * 100
-                #print("App.pheromoneMap", App.pheromoneMap)
                 avgScore = avgScore/App.nAnts
 
-                #evaporating
-                for i in range (App.nNodes+1):    
-                    for j in range (App.nNodes+1):
-                        App.pheromoneMap[i][j] = (App.pheromoneMap[i][j]* App.evapoRate)
-                #exit()
-
-                
-                #print("pheromoneMap", App.pheromoneMap)
                 #evaporate pheromone
                 self.on_loop()
                 self.on_render()
                 iteration = iteration +1
+                
                 maxPher = 0
                 maxPherPath = []
                 for i in range (App.nNodes+1):    
@@ -384,7 +328,7 @@ class App:
                             maxPherPath = [i, j]
                 time.sleep (50.0 / 100000.0);
                 if (iteration%10==0):
-                    print("it:",iteration,"max, min, avgScore", int(App.globalMax), int(App.globalMin), int(avgScore),"maxPath",App.globalMaxPath,  "minPath", App.globalMinPath)
+                    print("it:",iteration,"max, min, avgScore", (App.globalMax), (App.globalMin), (avgScore),"maxPath",App.globalMaxPath,  "minPath", App.globalMinPath)
                     print("maxPher", maxPher, "maxPherPath", maxPherPath)
                     for i in range (len(WholepathNode)):
                         print("Path",i,  WholepathNode[i])
