@@ -121,51 +121,69 @@ class App:
     #pheromoneMap[0][2] = 99999
     #pheromoneMap[2][0] = 99999
     
-    def __init__(self):
+    def __init__(self, autoSim):
         self._running = True
         self._display_surf = None
         self._ant_surf = None
         self._node_surf = None
         self.game = Game()
+        if self.on_init() == False:
+            self._running = False
+        pygame.event.pump()
+        keys = pygame.key.get_pressed()
         for i in range (self.nAnts):
             self.AntsLst.append(Ant(self.x, self.y))
+            
 
-        #putting data points
-        App.data = []        
-        App.data.append([0, self.x, self.y])
+        if(autoSim==True):
+            #putting data points
+            App.data = []        
+            App.data.append([0, self.x, self.y])
 
-        #configurations
-        
-        #oval-1 config #reached min 1000 in 570 generations.
-        
-        App.data.append([1, 200, 150])
-        App.data.append([2, 350, 150])
-        App.data.append([3, 400, 150])
-        App.data.append([4, 550, 150])
-        
-        App.data.append([5, 350, 400])
-        App.data.append([6, 200, 400])
-        App.data.append([7, 150, 400])
-        App.data.append([8, 100, 400])
+            #configurations
+            
+            #oval-1 config #reached min 1000 in 570 generations.
+            
+            App.data.append([1, 200, 150])
+            App.data.append([2, 350, 150])
+            App.data.append([3, 400, 150])
+            App.data.append([4, 550, 150])
+            
+            App.data.append([5, 350, 400])
+            App.data.append([6, 200, 400])
+            App.data.append([7, 150, 400])
+            App.data.append([8, 100, 400])
 
-        '''
-        #oval-2 config
-        App.data.append([1, 350, 85])
-        App.data.append([2, 550, 70])
-        App.data.append([3, 620, 75])
-        App.data.append([4, 750, 80])
-        
-        App.data.append([5, 750, 220])
-        App.data.append([6, 500, 320])
-        App.data.append([7, 150, 150])
-        App.data.append([8, 110, 140]) 
-        
-        for i in range (App.nNodes):
-            App.data.append([i+1, randint(0, 800), randint(0, 600)])     
-        '''
-        for i in range (len(App.data)):
-            self.NodeLst.append(Node(App.data[i][1], App.data[i][2]))
-        
+            '''
+            #oval-2 config
+            App.data.append([1, 350, 85])
+            App.data.append([2, 550, 70])
+            App.data.append([3, 620, 75])
+            App.data.append([4, 750, 80])
+            
+            App.data.append([5, 750, 220])
+            App.data.append([6, 500, 320])
+            App.data.append([7, 150, 150])
+            App.data.append([8, 110, 140]) 
+            
+            for i in range (App.nNodes):
+                App.data.append([i+1, randint(0, 800), randint(0, 600)])     
+            '''
+            for i in range (len(App.data)):
+                self.NodeLst.append(Node(App.data[i][1], App.data[i][2]))
+        if(autoSim==False):
+            App.data = []
+            nPoints = int(input(print("enter number of Points to place")))
+            pointCounter = 0
+            while(pointCounter<nPoints):
+                pygame.event.get()
+                if(pygame.mouse.get_pressed()[0]==1):
+                    App.data.append([pointCounter, pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]])
+                    pointCounter = pointCounter +1
+                    time.sleep(0.2)
+            for i in range (len(App.data)):
+                self.NodeLst.append(Node(App.data[i][1], App.data[i][2]))
+    
     def on_init(self):
         pygame.init()
         self._display_surf = pygame.display.set_mode((self.windowWidth,self.windowHeight), pygame.HWSURFACE)
@@ -249,8 +267,7 @@ class App:
         iteration = 0
         while( self._running ):
             try:
-                pygame.event.pump()
-                keys = pygame.key.get_pressed()
+                pygame.event.get()
                 #check for nearby pheromone
                 NodesNotTravelled = [] #for each ant
                 selectedNodeFrom = []
@@ -274,7 +291,7 @@ class App:
                     
                         self.on_loop()
                         self.on_render()
-                        
+                        pygame.event.get()
                     
                     while((abs(self.AntsLst[ant].x-selectedNodeTo[ant][1])>1)and(abs(self.AntsLst[ant].y-selectedNodeTo[ant][2]))>1):
                         self.on_loop()
@@ -333,11 +350,16 @@ class App:
                     for i in range (len(WholepathNode)):
                         print("Path",i,  WholepathNode[i])
             except:
+                1;
                 print("GAME OVER")
         self.on_cleanup()
  
 if __name__ == "__main__" :
-    theApp = App()
+    simimp = str(input(("press a for random simulation and b for placing points manually.")))
+    if(simimp=="b"):
+        theApp = App(False)
+    else:
+        theApp = App(True)
     theApp.on_execute()
 
 '''
