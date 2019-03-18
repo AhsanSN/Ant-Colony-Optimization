@@ -71,7 +71,7 @@ class Ant:
             subtractYFactor = -(fromY-toY)
         if(fromY>toY):
             subtractYFactor = -(fromY-toY)
-        
+        #print("App.simulationSlowness", App.simulationSlowness)
         self.stepX = ((subtractXFactor)/App.simulationSlowness)
         self.stepY = ((subtractYFactor)/App.simulationSlowness)
         self.x = self.x + self.stepX
@@ -98,10 +98,12 @@ class App:
     windowHeight = 600
     nAnts = 6
     nNodes = 8
-    evapoRate = 0.85550 #slowness (must be b/w 0 and 1)
-    simulationSlowness = 450 #keep is greater than 150
+    evapoRate = 0.50 #slowness (must be b/w 0 and 1)
+    simulationSlowness = 150 #keep is greater than 150 and less than 800
 
 
+    initx = 100
+    initlx = 400
     AntsLst = []
     NodeLst = []
     pheromoneMap = []
@@ -111,6 +113,7 @@ class App:
     globalMinPath = []
     data = []
     WholepathNode = []
+    lastKeyPressed = "";
     #initializing pharamone map
     for i in range (nNodes+1):
         pheromoneMap.append([])
@@ -222,13 +225,54 @@ class App:
             elif(self.AntsLst[ant].x<0):
                 self.AntsLst[ant].x = self.windowWidth
         pass
- 
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_1:
+                    App.lastKeyPressed = "1"
+                if event.key == pygame.K_2:
+                    App.lastKeyPressed = "2"
+            
+         
     def on_render(self):
         self._display_surf.fill((0,0,0))       
         for ant in range (self.nAnts):
             self.AntsLst[ant].draw(self._display_surf, self._ant_surf)
         for node in range (len(self.NodeLst)):
             self.NodeLst[node].draw(self._display_surf, self._node_surf)
+
+        #display slider
+        redColor = pygame.Color(255,0,0)
+        lredColor = pygame.Color(163, 13, 13)
+        blueColor = pygame.Color(45,40,211)
+        lblueColor = pygame.Color(18,14,124)
+        
+        pygame.draw.rect(self._display_surf,redColor,Rect(App.initx,5,10,20))
+        pygame.draw.rect(self._display_surf,lredColor,Rect(App.initlx,26,10,20))
+
+        if pygame.mouse.get_pressed()[0] != 0:
+           if(App.lastKeyPressed=="1"):
+               pos = pygame.mouse.get_pos()
+               App.initx = pos[0]
+               y = pos[1]
+               a = App.initx
+               if a < 0:
+                  a = 0
+               App.simulationSlowness = ((a/800)*650)+150
+           if(App.lastKeyPressed=="2"):
+               pos = pygame.mouse.get_pos()
+               App.initlx = pos[0]
+               y = pos[1]
+               a = App.initlx
+               if a < 0:
+                  a = 0
+               App.evapoRate = ((a/800))           
+           
+        myfont = pygame.font.SysFont('Adobe Gothic Std B', 30)
+        textsurface = myfont.render('Simulation Speed:(1)', False, (123, 123, 123))
+        ltextsurface = myfont.render('Evaporation Rate:(2)', False, (123, 123, 123))
+        self._display_surf.blit(textsurface,(0,0))
+        self._display_surf.blit(ltextsurface,(0,25))
         pygame.display.flip()
 
        
@@ -278,7 +322,6 @@ class App:
         iteration = 0
         while( self._running ):
             pygame.event.get()
-            
             #check for nearby pheromone
             NodesNotTravelled = [] #for each ant
             selectedNodeFrom = []
@@ -291,7 +334,6 @@ class App:
             for ant in range (App.nAnts):
                 selectedNodeFrom.append(NodesNotTravelled[ant].pop(0))
                 selectedNodeTo.append(1)
-            
             for i in range (len(App.data)-1):
                 for ant in range (App.nAnts):
                     #select one random node to go to
@@ -299,7 +341,6 @@ class App:
                     selectedNodeTo[ant] = NodesNotTravelled[ant].pop(deleteIndex)
                     WholepathNode[ant].append(selectedNodeTo[ant][0])
                     self.AntsLst[ant].moveToPoint(selectedNodeFrom[ant][1], selectedNodeFrom[ant][2], selectedNodeTo[ant][1], selectedNodeTo[ant][2])#moveRandom()
-                
                     self.on_loop()
                     self.on_render()
                     pygame.event.get()
@@ -316,6 +357,8 @@ class App:
                 #evaporating
                 for i in range (App.nNodes+1):    
                     for j in range (App.nNodes+1):
+                        if(App.evapoRate==0):
+                            App.evapoRate = 0.0000001
                         App.pheromoneMap[i][j] = (App.pheromoneMap[i][j]* App.evapoRate)
                 
             #reaching home
