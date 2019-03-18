@@ -131,11 +131,12 @@ class App:
             self._running = False
         pygame.event.pump()
         keys = pygame.key.get_pressed()
-        for i in range (self.nAnts):
-            self.AntsLst.append(Ant(self.x, self.y))
-            
-
+        
         if(autoSim==True):
+            #putting ants
+            for i in range (self.nAnts):
+                self.AntsLst.append(Ant(self.x, self.y))
+            
             #putting data points
             App.data = []        
             App.data.append([0, self.x, self.y])
@@ -173,7 +174,8 @@ class App:
                 self.NodeLst.append(Node(App.data[i][1], App.data[i][2]))
         if(autoSim==False):
             App.data = []
-            nPoints = int(input(("enter number of Points to place")))
+            nPoints = int(input(("Enter number of Markets to place on the Map: ")))
+            print("Window opened.")
             print("1st points is home.")
             pointCounter = 0
             while(pointCounter<nPoints):
@@ -197,6 +199,18 @@ class App:
 
             for i in range (len(App.data)):
                 self.NodeLst.append(Node(App.data[i][1], App.data[i][2]))
+
+            events = pygame.event.get()
+            isEnterLoop = True
+            myfont = pygame.font.SysFont('Adobe Gothic Std B', 50)
+            textsurface = myfont.render('Number of Salesmen? (type in Console)', False, (123, 123, 123))
+            self._display_surf.blit(textsurface,(100,280))
+            pygame.display.flip()
+            App.nAnts = int(input("Number of Salesman? :"))
+            
+            #putting ants
+            for i in range (self.nAnts):
+                self.AntsLst.append(Ant(self.x, self.y))
     
     def on_init(self):
         pygame.init()
@@ -269,7 +283,7 @@ class App:
                App.evapoRate = ((a/800))           
            
         myfont = pygame.font.SysFont('Adobe Gothic Std B', 30)
-        textsurface = myfont.render('Simulation Speed:(1)', False, (123, 123, 123))
+        textsurface = myfont.render('Simulation Smoothness:(1)', False, (123, 123, 123))
         ltextsurface = myfont.render('Evaporation Rate:(2)', False, (123, 123, 123))
         self._display_surf.blit(textsurface,(0,0))
         self._display_surf.blit(ltextsurface,(0,25))
@@ -401,8 +415,7 @@ class App:
             if (iteration%10==0):
                 print("it:",iteration,"max, min, avgScore", (App.globalMax), (App.globalMin), (avgScore),"maxPath",App.globalMaxPath,  "minPath", App.globalMinPath)
                 print("maxPher", maxPher, "maxPherPath", maxPherPath)
-                for i in range (len(WholepathNode)):
-                    print("Path",i,  WholepathNode[i])
+                
 
         self.on_cleanup()
  
