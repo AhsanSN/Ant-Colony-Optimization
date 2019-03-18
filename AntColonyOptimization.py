@@ -132,11 +132,11 @@ class App:
                 self.AntsLst.append(Ant(self.x, self.y))
 
             #initializing pharamone map
-            for i in range (nNodes+1):
-                pheromoneMap.append([])
-            for i in range (nNodes+1):    
-                for j in range (nNodes+1):
-                    pheromoneMap[i].append(randint(20, 50))
+            for i in range (App.nNodes+1):
+                App.pheromoneMap.append([])
+            for i in range (App.nNodes+1):    
+                for j in range (App.nNodes+1):
+                    App.pheromoneMap[i].append(randint(20, 50))
             
             #putting data points
             App.data = []        
@@ -173,6 +173,7 @@ class App:
             '''
             for i in range (len(App.data)):
                 self.NodeLst.append(Node(App.data[i][1], App.data[i][2]))
+            print("Window opened")
         if(autoSim==False):
             App.data = []
             nPoints = int(input(("Enter number of Markets to place on the Map: ")))
