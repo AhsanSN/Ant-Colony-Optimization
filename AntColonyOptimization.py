@@ -99,10 +99,10 @@ class App:
     nAnts = 6
     nNodes = 8
     evapoRate = 0.50 #slowness (must be b/w 0 and 1)
-    simulationSlowness = 150 #keep is greater than 150 and less than 800
+    simulationSlowness = 250 #keep is greater than 150 and less than 800
 
 
-    initx = 100
+    initx = 300
     initlx = 400
     AntsLst = []
     NodeLst = []
@@ -114,12 +114,6 @@ class App:
     data = []
     WholepathNode = []
     lastKeyPressed = "";
-    #initializing pharamone map
-    for i in range (nNodes+1):
-        pheromoneMap.append([])
-    for i in range (nNodes+1):    
-        for j in range (nNodes+1):
-            pheromoneMap[i].append(randint(20, 50))
     
     def __init__(self, autoSim):
         self._running = True
@@ -136,6 +130,13 @@ class App:
             #putting ants
             for i in range (self.nAnts):
                 self.AntsLst.append(Ant(self.x, self.y))
+
+            #initializing pharamone map
+            for i in range (nNodes+1):
+                pheromoneMap.append([])
+            for i in range (nNodes+1):    
+                for j in range (nNodes+1):
+                    pheromoneMap[i].append(randint(20, 50))
             
             #putting data points
             App.data = []        
@@ -178,6 +179,7 @@ class App:
             print("Window opened.")
             print("1st points is home.")
             pointCounter = 0
+            App.nNodes = nPoints
             while(pointCounter<nPoints):
                 pygame.event.get()
                 self._display_surf.fill((0,0,0))       
@@ -211,6 +213,13 @@ class App:
             #putting ants
             for i in range (self.nAnts):
                 self.AntsLst.append(Ant(self.x, self.y))
+
+            #initializing pharamone map
+            for i in range (App.nNodes+1):
+                App.pheromoneMap.append([])
+            for i in range (App.nNodes+1):    
+                for j in range (App.nNodes+1):
+                    App.pheromoneMap[i].append(randint(20, 50))
     
     def on_init(self):
         pygame.init()
@@ -420,7 +429,7 @@ class App:
         self.on_cleanup()
  
 if __name__ == "__main__":
-    simimp = str(input(("press a for random simulation and b for placing points manually.")))
+    simimp = str(input(("Press 'a' for Scripted Simulation and 'b' for placing points manually.")))
     if(simimp=="b"):
         theApp = App(False)
     else:
