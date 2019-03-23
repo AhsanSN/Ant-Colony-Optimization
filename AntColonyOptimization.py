@@ -174,6 +174,7 @@ class App:
             for i in range (len(App.data)):
                 self.NodeLst.append(Node(App.data[i][1], App.data[i][2]))
             print("Window opened")
+            print("click 1 or 2 to operate sliders")
         if(autoSim==False):
             App.data = []
             nPoints = int(input(("Enter number of Markets to place on the Map: ")))
@@ -221,7 +222,8 @@ class App:
             for i in range (App.nNodes+1):    
                 for j in range (App.nNodes+1):
                     App.pheromoneMap[i].append(randint(20, 50))
-    
+            print("simulation started")
+            print("click 1 or 2 to operate sliders")
     def on_init(self):
         pygame.init()
         self._display_surf = pygame.display.set_mode((self.windowWidth,self.windowHeight), pygame.HWSURFACE)
